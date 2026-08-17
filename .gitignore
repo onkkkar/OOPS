@@ -1,0 +1,13 @@
+# Compiled binaries (g++ output)
+*.exe
+*.out
+*.o
+*.obj
+
+# Editor
+.vscode/
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store

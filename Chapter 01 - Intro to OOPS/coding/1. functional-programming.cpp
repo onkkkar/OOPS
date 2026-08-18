@@ -7,7 +7,7 @@ string schoolName = "DPS";
 // Functions for Student Behaviours
 void study(int id, int age, string name)
 {
-    cout << name << " (id: " << id << ", age: " << age << ") is Studying" << endl;
+    cout << name << " (id: " << id << ", age: " << age << ") is Studying at " << schoolName << endl;
 }
 
 void eat(int id, int age, string name)
@@ -47,10 +47,11 @@ void parallelArrays()
     }
 }
 
-// --- unrelated to students, but can still read schoolName — global data has no privacy ---
+// --- unrelated to students, but can still read AND overwrite schoolName — global data has no privacy ---
 void teach()
 {
     cout << "Teaching a class at " << schoolName << endl;
+    schoolName = "Hacked High";
 }
 
 int main()
@@ -71,6 +72,9 @@ int main()
     parallelArrays();
 
     teach();
+
+    // schoolName was silently changed by a function that doesn't own it
+    cout << "School is now: " << schoolName << endl;
 
     return 0;
 }

@@ -1,11 +1,33 @@
 # Chapter 01 - Introduction to OOPS
 
+---
+
+## 📌 Table of Contents
+
+- [What is OOPS?](#what-is-oops)
+- [Why Do We Need OOPS?](#why-do-we-need-oops)
+- [The Paradigm Before OOPS: Functional Programming](#the-paradigm-before-oops-functional-programming)
+- [Case Study: Modelling a Student](#case-study-modelling-a-student)
+- [Limitations of Functional Programming](#limitations-of-functional-programming)
+  - [1. Doesn't Model Real-World Entities Well](#1-doesnt-model-real-world-entities-well)
+  - [2. Adding New Data Requires Modifying Every Function That Needs It](#2-adding-new-data-requires-modifying-every-function-that-needs-it)
+  - [3. Global Data Has No Privacy](#3-global-data-has-no-privacy)
+  - [4. No Clear Boundaries Between Data and Behaviour](#4-no-clear-boundaries-between-data-and-behaviour)
+  - [5. No Modularity - Code Becomes Monolithic](#5-no-modularity---code-becomes-monolithic)
+- [Towards a Solution: The "Container" Idea](#towards-a-solution-the-container-idea)
+- [What is OOP? (Object-Oriented Programming System)](#what-is-oop-object-oriented-programming-system)
+- [Objects and Classes](#objects-and-classes)
+- [Attributes & Behaviour](#attributes--behaviour)
+- [Summary](#summary)
+
+---
+
 ## What is OOPS?
 
 OOPS stands for **Object Oriented Programming System(s)** - a programming
 paradigm (a way of structuring and thinking about code).
 
-To actually understand *what* it is and *why* it matters, it helps more to see
+To actually understand _what_ it is and _why_ it matters, it helps more to see
 the problem it solves than to memorize the definition. So before defining OOPS
 any further, let's look at the paradigm that came before it, and where that
 paradigm starts to struggle.
@@ -38,26 +60,26 @@ its job - and it may give us back an **output** via a return value.
 Say we need to write a program for **100 students**, where each student has:
 
 - their own **properties**: `id`, `age`, `name`
-- a property they'd like to keep **private**: `gfName` (girlfriend's name)
 - their own **behaviours**: `study()`, `eat()`, `sleep()`
-- a behaviour that depends on the private property: `hasGF()`
+
+On top of that, the program has one piece of data shared by everyone - the
+school's name, `schoolName` - which functional programming can only express as
+a **global variable**.
 
 Let's solve this the only way functional programming lets us: with plain
 variables and plain functions.
 
+> 📄 **Source Code Reference**: See the executable C++ code in [`coding/1. functional-programming.cpp`](file:///Users/onkarpatel/dev/my/OOPS/Chapter%2001%20-%20Intro%20to%20OOPS/coding/1.%20functional-programming.cpp).
+
 ### Attempt 1 - One Student
 
 For a single student, this reads naturally enough
-(from `coding/messy-code.cpp`):
+(from `coding/1. functional-programming.cpp`):
 
 ```cpp
-int id;
-int age;
-string name;
-
 void study(int id, int age, string name)
 {
-    cout << name << " (id: " << id << ", age: " << age << ") is Studying" << endl;
+    cout << name << " (id: " << id << ", age: " << age << ") is Studying at " << schoolName << endl;
 }
 
 void eat(int id, int age, string name)
@@ -71,6 +93,19 @@ void sleep(int id, int age, string name)
 }
 ```
 
+and inside `main()` we keep that one student's data as plain variables and
+hand it to each behaviour:
+
+```cpp
+int id = 1;
+int age = 20;
+string name = "Rahul";
+
+study(id, age, name);
+eat(id, age, name);
+sleep(id, age, name);
+```
+
 This looks fine - for **one** student. The trouble starts when we try to
 scale it to 100.
 
@@ -82,25 +117,26 @@ We give every student their own numbered set of variables - `id1`, `id2`,
 `id3`, ... `age1`, `age2`, ... and so on:
 
 ```cpp
-int id1 = 1, id2 = 2, id3 = 3;
-int age1 = 20, age2 = 21, age3 = 19;
-string name1 = "Rahul", name2 = "Aman", name3 = "Simran";
-string gfName1 = "Priya", gfName2 = "", gfName3 = "Karan";
+void duplicateVariables()
+{
+    int id1 = 1, id2 = 2, id3 = 3;
+    int age1 = 20, age2 = 21, age3 = 19;
+    string name1 = "Rahul", name2 = "Aman", name3 = "Simran";
 
-study(id1, age1, name1);
-study(id2, age2, name2);
-study(id3, age3, name3);
+    study(id1, age1, name1);
+    study(id2, age2, name2);
+    study(id3, age3, name3);
 
-// The compiler happily accepts this too - id1 with age2 with
-// name3 - three DIFFERENT students' data mixed into one call.
-study(id1, age2, name3);
+    // compiles fine, but silently wrong — mixed up students' data
+    study(id1, age2, name3);
+}
 ```
 
-For **100** students, that's `id1..id100`, `age1..age100`, `name1..name100`,
-`gfName1..gfName100` - roughly 400 separate variables for what is
-conceptually a single kind of thing, "a student." Worse, nothing stops us
-from calling `study(id1, age2, name3)` - mixing up three different students'
-data in one call. It compiles fine and runs; it's just silently wrong,
+For **100** students, that's `id1..id100`, `age1..age100`, and
+`name1..name100` - 300 separate variables for what is conceptually a single
+kind of thing, "a student." Worse, nothing stops us from calling
+`study(id1, age2, name3)` - mixing up three different students' data in one
+call. It compiles fine and runs; it's just silently wrong,
 because nothing in the language says `id1`, `age1`, and `name1` belong
 together.
 
@@ -109,23 +145,25 @@ together.
 Instead of numbered variables, we use one array per property:
 
 ```cpp
-int ids[3] = {1, 2, 3};
-int ages[3] = {20, 21, 19};
-string names[3] = {"Rahul", "Aman", "Simran"};
-string gfNames[3] = {"Priya", "", "Karan"};
-
-for (int i = 0; i < 3; i++)
+void parallelArrays()
 {
-    // We MUST remember that index i means the same student in
-    // every single array. Nothing enforces that correspondence
-    // except our own discipline while writing the loop.
-    study(ids[i], ages[i], names[i]);
+    int ids[3] = {1, 2, 3};
+    int ages[3] = {20, 21, 19};
+    string names[3] = {"Rahul", "Aman", "Simran"};
+
+    for (int i = 0; i < 3; i++)
+    {
+        // We MUST remember that index i means the same student in
+        // every single array. Nothing enforces that correspondence
+        // except our own discipline while writing the loop.
+        study(ids[i], ages[i], names[i]);
+    }
 }
 ```
 
 This is slightly less repetitive, but the underlying problem hasn't gone
 away: `ids[i]`, `ages[i]`, and `names[i]` are only "the same student" because
-*we* keep every array in sync by hand. If any one array gets sorted, filtered,
+_we_ keep every array in sync by hand. If any one array gets sorted, filtered,
 or updated independently of the others, the correspondence silently breaks.
 
 **Note:** even at just 3 students, this code already feels messy and fragile.
@@ -134,95 +172,259 @@ becomes genuinely unmanageable.
 
 ## Limitations of Functional Programming
 
-Looking back at `messy-code.cpp`, we can now name exactly what's going wrong.
+Looking back at `1. functional-programming.cpp`, we can now name exactly
+what's going wrong.
 
 ### 1. Doesn't Model Real-World Entities Well
 
-A student is one real-world "thing." In our code, it's scattered across four
-or more unrelated variables (`id`, `age`, `name`, `gfName`) and four or more
-unrelated functions (`study`, `eat`, `sleep`, `hasGF`) with nothing in the
-language tying them together as a single concept. The relationship between a
-student and *their own* `study()` call has to be modeled entirely in the
-programmer's head. This gets worse once we add related real-world entities
-too - teachers, subjects, classrooms - each pulling in their own scattered
-variables and functions with the same problem.
+In the real world, a student is **one thing**. You point at Rahul and that
+single person carries his id, his age, his name, and the fact that he studies,
+eats, and sleeps. It's all one package.
 
-### 2. Adding New Data Requires Every Function to Be Modified
+In our code, that one thing has been chopped into six unrelated pieces:
 
-Right now every behaviour function already takes the full trio just to print
-a message that mostly ignores it:
-
-```cpp
-void study(int id, int age, string name)
-{
-    cout << name << " (id: " << id << ", age: " << age << ") is Studying" << endl;
-}
-
-void eat(int id, int age, string name)
-{
-    cout << name << " is Eating" << endl;
-}
+```
+REAL WORLD ENTITY (Student)            FUNCTIONAL PROGRAMMING (Scattered Pieces)
++---------------------------+          +--------------------------------------+
+| Rahul                     |   ===>   | int id = 1;          (loose var)     |
+| - id: 1                   |          | int age = 20;        (loose var)     |
+| - age: 20                 |          | string name="Rahul"; (loose var)     |
+| - name: "Rahul"           |          +--------------------------------------+
+|                           |          | void study(...)      (loose func)    |
+| Behaviours:               |          | void eat(...)        (loose func)    |
+| - study(), eat(), sleep() |          | void sleep(...)      (loose func)    |
++---------------------------+          +--------------------------------------+
+                                       | void teach(...)      (mixed in file!)|
+                                       +--------------------------------------+
 ```
 
-Suppose we now add a new property, `numberOfSubjects`, to each student. Every
-one of these functions - including `eat()`, which never uses it - must grow a
-new parameter just to keep compiling:
+Nothing in the language says these six belong together. They're just three
+loose variables and three loose functions sitting in a file. "Rahul" only
+exists in _our head_ — we have to remember that `id`, `age`, and `name` are
+one person, and remember to hand them to `study()` on every call so that
+`study()` knows whom it is talking about.
+
+And this is the small version of the problem. A real student has far more than
+three properties - roll number, marks, attendance, fees, address, class,
+section - and far more than three behaviours. Each one added is one more loose
+piece to track by hand. Modelling **one** student is already a chore.
+
+#### Now Add Teachers
+
+Now the school wants teachers too. A teacher has their own properties -
+`teacherId`, `teacherName`, `subject`, `salary` - and their own behaviours -
+`teach()`, `grade()`, `takeAttendance()`. So we do the exact same thing again:
+more loose variables, more loose functions, dumped into the same flat file
+next to the student ones.
+
+So the code never actually contains a "Student" or a "Teacher." It only
+contains a growing pile of variables and functions that we, the programmers,
+have privately agreed to think of as students and teachers. That agreement is
+not written down anywhere the compiler can see - which is precisely why
+functional programming models real-world entities so poorly.
+
+### 2. Adding New Data Requires Modifying Every Function That Needs It
+
+Suppose we now add a new property, `numberOfSubjects`, and only `study()`
+actually needs it - to print how many subjects a student is taking. `eat()`
+and `sleep()` never touch it, so their signatures stay exactly as they are;
+that part isn't as bad as it might sound.
+
+But `study()`'s signature did change, from three parameters to four:
 
 ```cpp
 void study(int id, int age, string name, int numberOfSubjects)
 {
-    cout << name << " (id: " << id << ", age: " << age << ") is Studying" << endl;
-}
-
-void eat(int id, int age, string name, int numberOfSubjects) // unused here, but must still be threaded through
-{
-    cout << name << " is Eating" << endl;
+    cout << name << " is Studying " << numberOfSubjects << " subjects" << endl;
 }
 ```
 
-And every call site - `study(id, age, name)`, `study(ids[i], ages[i],
-names[i])`, and so on throughout `duplicateVariables()` and
-`parallelArrays()` - must also be updated to pass it. One new piece of data
-means touching every function in the file, whether that function needed the
-data or not.
+and that ripples outward. Every place `study()` gets called anywhere in the
+file now has one argument too few, and won't compile until it's fixed by
+hand:
+
+```cpp
+study(id, age, name, numberOfSubjects);                    // main()
+study(id1, age1, name1, subjects1);                         // duplicateVariables()
+study(id2, age2, name2, subjects2);
+study(id3, age3, name3, subjects3);
+study(ids[i], ages[i], names[i], subjectsCount[i]);          // parallelArrays()
+```
+
+Five call sites, scattered across the file, all needing to be found and fixed
+by hand — for one new property on one function.
+
+```
+THE RIPPLE EFFECT OF PARAMETER CHANGES:
+
+       CHANGE: Add `numberOfSubjects` to student properties
+                                 |
+                                 v
+        [ void study(id, age, name, numberOfSubjects) ]  <-- Signature Changed!
+                                 |
+           +---------------------+---------------------+
+           |                     |                     |
+           v                     v                     v
+     main() call site    duplicateVariables()    parallelArrays() loop
+     (Needs update)       (3 calls to update)       (Needs array update)
+                                 |
+                                 v
+                   Pass-through functions like dailyRoutine()
+                   (Must accept & forward unused param)
+```
+
+And this is the small version. The moment some _other_, unrelated function
+calls `study()` on a student's behalf — say a `dailyRoutine()` that just runs
+`study(); eat(); sleep();` in sequence — that function has to start accepting
+`numberOfSubjects` too, purely to forward it along, even though it never uses
+the value itself. Nothing marks `numberOfSubjects` as "belongs to the
+student, available wherever the student's data already is." It has to be
+re-declared, one parameter at a time, in every function that even indirectly
+touches it.
 
 ### 3. Global Data Has No Privacy
 
-Look at `hasGF()` again - it takes **zero parameters** and just reads the
-global `gfName` directly. And in the full file, there's also a `schoolName`
-global and a `teach()` function:
+#### The Story
+
+All 100 of our students go to the same school, and their behaviours need to
+know its name - `study()` should be able to say "Rahul ... is Studying at
+DPS". The name is identical for every one of them, so making it a fourth
+per-student property and copying `"DPS"` into all 100 students would be
+pointless. What we want is **one** shared piece of data that every _student_
+function can reach.
+
+Functional programming gives us exactly one tool for that: a **global
+variable**.
 
 ```cpp
-string schoolName = "DPS"; // meant only for students...
+// Global Data
+string schoolName = "DPS";
+```
 
-// This function has NOTHING to do with a student's personal life.
-// Yet because schoolName is global,
-// teach() can read and misuse ANY of it if it wanted to.
-void teach()
+And it works. `study()` reads it without being passed it:
+
+```cpp
+void study(int id, int age, string name)
 {
-    cout << "A teacher is taking a class at " << schoolName << endl;
-    cout << "...and could just as easily print " << gfName << " if it wanted to." << endl;
+    cout << name << " (id: " << id << ", age: " << age << ") is Studying at " << schoolName << endl;
 }
 ```
 
-`teach()` is meant to be a teacher-only function - it has no business knowing
-a student's girlfriend's name. But because `gfName` is a global variable,
-nothing in the language stops `teach()` (or any other function) from reading
-or printing it anyway. There is no way to say "this data is private to the
-student."
+```
+Rahul (id: 1, age: 20) is Studying at DPS
+```
+
+So far, so good - this is exactly what we asked for.
+
+#### The Problem
+
+Now our program grows and we add `teach()`. It is a **teacher-side** function;
+it has nothing to do with student data at all. But `schoolName` is global, so
+`teach()` can freely read it _and silently overwrite it_:
+
+```cpp
+// --- unrelated to students, but can still read AND overwrite schoolName — global data has no privacy ---
+void teach()
+{
+    cout << "Teaching a class at " << schoolName << endl;
+    schoolName = "Hacked High";
+}
+```
+
+Back in `main()`, nobody asked for that change, but everyone gets it:
+
+```cpp
+teach();
+
+// schoolName was silently changed by a function that doesn't own it
+cout << "School is now: " << schoolName << endl;
+```
+
+```
+Teaching a class at DPS
+School is now: Hacked High
+```
+
+```
+UNINTENDED GLOBAL DATA LEAKAGE:
+
++--------------------------------------------------------+
+|                     GLOBAL SCOPE                       |
+|   string schoolName = "DPS";                           |
++--------------------------------------------------------+
+         |                                      ^
+         | Allowed Read Access                  | Unintended Write Access!
+         v                                      |
++--------------------+                +--------------------+
+| Student Functions  |                | Teacher Functions  |
+|   study()          |                |   teach()          |
+| (Intended Reader)  |                | (Overwrites global |
++--------------------+                |  schoolName data)  |
+                                      +--------------------+
+```
+
+Ask the real question here: **did we ever want `teach()` to have that access?**
+No. We wanted `schoolName` shared among the _students_, not exposed to every
+function in the program. But that choice was never ours to make. The moment we
+declare a global in functional programming, **everyone** can read it and
+**everyone** can write to it. There is no way to say "this data belongs to the
+students, and only student behaviours may touch it."
+
+So one unrelated function can quietly corrupt data the rest of the program
+depends on, and the compiler never warns us — because as far as the language is
+concerned, nothing was violated. There was no rule to violate in the first
+place.
 
 ### 4. No Clear Boundaries Between Data and Behaviour
 
-The student's properties (`id`, `age`, `name`, `gfName`) live at the top of
-the file as loose globals. The student's behaviours (`study`, `eat`, `sleep`,
-`hasGF`) live below as loose functions. Nothing marks any of them as
-belonging to "Student" except naming convention and the programmer
-remembering the connection. There's no boundary around the concept at all.
+That last point is really a symptom of something bigger: in functional
+programming there is **no boundary** we can draw around a concept.
+
+Look at how the file is laid out. `schoolName` sits at the top as a loose
+global. A student's `id`, `age`, and `name` are loose variables inside
+`main()`. `study()`, `eat()`, and `sleep()` are loose functions further down,
+sitting at exactly the same level as `teach()` - which belongs to a completely
+different concept. The file is one flat surface, and everything on it can see
+everything else.
+
+The only thing that makes `study()` "a student behaviour" and `teach()` "a
+teacher behaviour" is that _we named them that way_. The language sees four
+equally-anonymous functions. So:
+
+- Nothing says `id`, `age`, and `name` belong together as one student - which
+  is exactly why `study(id1, age2, name3)` compiles.
+- Nothing says `study()` belongs _with_ that data - which is why the data has
+  to be passed in by hand on every single call.
+- Nothing says `teach()` is on the outside of the student concept - which is
+  why it can reach straight into `schoolName`.
+
+Every one of those boundaries exists only in the programmer's head. What we
+actually need is a way to draw the boundary **in the code itself**: a line
+where we can say "this data and these behaviours are one thing — inside is
+theirs, outside stays out."
+
+```
+FLAT FILE LAYOUT (Functional) vs. BOUNDED CONCEPT (OOP Target):
+
+Functional Programming (Flat & Unbounded):
++-------------------------------------------------------------------------+
+| [schoolName global]   [id, age, name]   [study()]   [eat()]   [teach()] |
+| (Everything is exposed on one flat surface; zero isolation boundaries)   |
++-------------------------------------------------------------------------+
+
+Object-Oriented Goal (Encapsulated & Bounded):
++-----------------------------------+     +-----------------------------------+
+|         STUDENT BOUNDARY          |     |         TEACHER BOUNDARY          |
+|-----------------------------------|     |-----------------------------------|
+|  Data: id, age, name, schoolName  |     |  Data: teacherId, subject         |
+|  Behaviours: study(), eat()       |     |  Behaviours: teach(), grade()     |
++-----------------------------------+     +-----------------------------------+
+```
 
 ### 5. No Modularity - Code Becomes Monolithic
 
-As we add more students, more teachers, more subjects - all handled the same
-way, as more flat variables and more flat functions - everything piles into
+As we add more students, more teachers, more subjects — all handled the same
+way, as more flat variables and more flat functions — everything piles into
 one undifferentiated set of globals and functions with no sub-grouping. There
 is no unit smaller than "the whole file" to reason about, test, or reuse.
 Functional programming code like this can become monolithic and increasingly
@@ -230,22 +432,148 @@ difficult to maintain as it grows.
 
 ## Towards a Solution: The "Container" Idea
 
-Imagine, instead, a single container - a box - that holds `id`, `name`, `age`,
-and `gfName` together, *and* holds the behaviours `study()`, `eat()`,
-`sleep()`, and `hasGF()` that act on them, all as one unit.
+Imagine, instead, a single container — a **box** — that holds data (`id`, `name`, `age`) together, _and_ holds the behaviours (`study()`, `eat()`, `sleep()`) that act on them, all bound together as **one unified unit**.
 
-Filling in that container with real values is what makes something "a
-student" - whoever holds a fully filled-in container has all the information
-and behaviour tags that define a student.
+```
++-------------------------------------------------------+
+|                   STUDENT CONTAINER                   |
+|-------------------------------------------------------|
+|  [ Data / State ]                                     |
+|  - id: 101                                            |
+|  - name: "Rahul"                                      |
+|  - age: 20                                            |
+|-------------------------------------------------------|
+|  [ Behaviours / Methods ]                             |
+|  - study()                                            |
+|  - eat()                                              |
+|  - sleep()                                            |
++-------------------------------------------------------+
+```
 
-This also fixes the privacy problem: if `gfName` is sealed *inside* the box,
-only the box's own behaviours (like `hasGF()`) can reach it - unlike the
-global `gfName` in `messy-code.cpp`, which `teach()` could read even though it
-has no business doing so.
+### Key Breakthroughs of the Container Model
 
-This "container" is exactly what the next chapter formally introduces as a
-**class**, and a container filled in with real values is what we'll call an
-**object**. Along the way, we'll also see how OOPS brings back the
-**modularity** that functional programming lost - grouping related data and
-behaviour into self-contained, reusable units instead of one flat pile of
-globals and functions.
+1. **Self-Contained Representation**: Filling in that container with real values is what makes something "a student". Whoever holds a fully filled-in container has all the information and behaviour tags that define a student.
+2. **Data Privacy & Protection**: This fixes the privacy problem inherent in functional/procedural programming. Data sealed _inside_ the box can be reached **only** by the box's own behaviours.
+   - _Contrast with Functional Code_: Unlike the global `schoolName` in `1. functional-programming.cpp` (which `teach()` could read and overwrite even though it had no business doing so), encapsulation in OOP ensures strict boundary access.
+3. **Formalizing Class and Object**:
+   - **Class**: This "container" or blueprint is formally introduced as a **Class**.
+   - **Object**: A container filled in with real values is what we call an **Object**.
+4. **Restoring Modularity**: OOPS brings back the **modularity** that functional programming lost — grouping related data and behaviour into self-contained, reusable units instead of one flat pile of globals and functions.
+
+---
+
+## What is OOP? (Object-Oriented Programming System)
+
+> **"OOP is like Life! As things exist in Life, the same concepts exist in OOPS."**
+
+### 1. Real-World Modeling
+
+In life, we deal with various physical and abstract entities. For example:
+
+- **Bird / Sparrow**: "Sparrow" is an abstract term or concept, but in reality, there can be multiple individual sparrows (Sparrow 1, Sparrow 2, Sparrow 3, ...), each possessing its own specific attributes and behaviours.
+- **Person**: "Person" is a concept, while individual people (Person 1, Person 2, Person 3, ...) have their own attributes (name, age, height) and behaviours (speak, eat).
+
+If we want to solve real-world problems and depict real-world systems through code, **OOP is the paradigm of choice**. Just like a Student is a real-world entity with attributes and behaviours, we can model and construct exact software representations of a Student using OOP.
+
+### 2. Core Characteristics of OOP
+
+1. **Real-World Problem Solving**: A programming technology/paradigm designed to solve real-world problems by modeling real-world systems directly within programming languages.
+2. **Object Communication**: A programming style that involves dividing a program into distinct object components that communicate with one another.
+3. **Entity-Based Coding Style**: Software is structured around real-world entities/objects (e.g., Student, Teacher, Car, Bus, etc.), where every object maintains its own private state/attributes and associated behaviours.
+4. **Data and Behaviour Unification**: The fundamental idea is to combine both data and behaviour into a single unit to promote modularity.
+   - _The Blueprint Analogy_: Imagine creating a box labeled **Student**. Inside it are all data fields (`id`, `name`, `age`) and behaviours (`study()`, `eat()`, `sleep()`). This box is a **blueprint**.
+   - Anyone following this exact blueprint is termed a **Student**. Student `s1` has all these data fields and behaviours, as do `s2`, `s3`, and so on.
+   - This mirrors the real world: the blueprint/container is a **Template (Class)**, whereas the actual entities `s1`, `s2`, `s3` created from it are **Objects**.
+   - The template is the abstract idea (e.g., _"A student must have these attributes and behaviours"_ or _"A car must have these properties"_), while objects are the concrete instances that possess those properties (students, cars, birds, etc.).
+5. **Enhanced Modularity, Reusability, and Maintainability**: OOP promotes modularity by encapsulating data and behaviour into a container/class. This modular approach greatly enhances code reusability and maintainability, allowing objects to be seamlessly reused across different parts of a program.
+6. **"OOP is Life"**: OOP mirrors real-world structures, making complex software architectures intuitive to design, reason about, and maintain.
+
+---
+
+## Objects and Classes
+
+1. **Real-World Entities Have State & Behaviour**: Entities like cars, persons, and students have state (data) and behaviour (actions).
+2. **From Real World to Programming**: A student named **Rahul** is a real-world entity. In programming, Rahul is represented as an **Object**.
+3. **The Blueprint (Class)**: What defines how an object will look and act? There must be a blueprint or template, which is the **Class**.
+4. **Fundamental Definition**:
+   $$\text{Object} = \text{An Instance of a Class}$$
+
+### Concrete Example: Car Class vs. Car Objects
+
+- **Car Template (Class)**: Defines properties: `bodyShape`, `color`, `tyres`, `seats`.
+- **Fortuner (Object)**: `bodyShape` = SUV, `color` = White, `tyres` = 4, `seats` = 7.
+- **WagonR (Object)**: `bodyShape` = Hatchback, `color` = White, `tyres` = 4, `seats` = 4.
+
+```
++-------------------------------------------------------+
+|                     CLASS: Car                        |
+|-------------------------------------------------------|
+|  - bodyShape: string                                  |
+|  - color: string                                      |
+|  - tyres: int                                         |
+|  - seats: int                                         |
++-------------------------------------------------------+
+                           |
+       +-------------------+-------------------+
+       |                                       |
+       v                                       v
++-----------------------+               +-----------------------+
+|  OBJECT: Fortuner     |               |   OBJECT: WagonR      |
+|-----------------------|               |-----------------------|
+|  bodyShape = "SUV"    |               |  bodyShape="Hatchback"|
+|  color     = "White"  |               |  color     = "White"  |
+|  tyres     = 4        |               |  tyres     = 4        |
+|  seats     = 7        |               |  seats     = 4        |
++-----------------------+               +-----------------------+
+```
+
+_Summary_: The actual cars on the road (**Fortuner**, **WagonR**) are real **Objects**. The abstract idea/blueprint of what a car is constitutes the **Class / Blueprint / Template**. An object is the variable/entity that actually possesses that blueprint's structure.
+
+---
+
+## Attributes & Behaviour
+
+1. **Attributes (State / Properties)**: The data elements, properties, or variables belonging to an object (e.g., `name`, `age`, `height`).
+2. **Behaviour (Methods / Functions)**: The functions or actions that an object can execute (e.g., `speak()`, `eat()`).
+
+### Visual Representation: Person Class & Instances
+
+```
++-------------------------------------------------------+
+|                    CLASS: Person                      |
+|-------------------------------------------------------|
+|  [ Data / State / Attributes ]                        |
+|  - name: string                                       |
+|  - age: int                                           |
+|  - height: double                                     |
+|-------------------------------------------------------|
+|  [ Behaviours / Methods ]                             |
+|  - speak()                                            |
+|  - eat()                                              |
++-------------------------------------------------------+
+                           |
+        +------------------+------------------+
+        |                  |                  |
+        v                  v                  v
++----------------+  +----------------+  +----------------+
+| OBJECT: Rahul  |  | OBJECT: Kunal  |  |  OBJECT: Ram   |
+|----------------|  |----------------|  |----------------|
+| name = "Rahul" |  | name = "Kunal" |  | name = "Ram"   |
+| age  = 20      |  | age  = 22      |  | age  = 21      |
+| height = 5.9   |  | height = 6.0   |  | height = 5.8   |
+|----------------|  |----------------|  |----------------|
+| speak()        |  | speak()        |  | speak()        |
+| eat()          |  | eat()          |  | eat()          |
++----------------+  +----------------+  +----------------+
+```
+
+All of them — **Rahul**, **Ram**, and **Kunal** — are individual instances of the `Person` class. Every one of them is an **Object** possessing its own unique attribute values while sharing the common set of behaviours defined by the `Person` blueprint.
+
+---
+
+## Summary
+
+1. **OOP Paradigm**: Object-Oriented Programming is a paradigm used to model and implement real-world objects in software.
+2. **Real-World Alignment**: Identifying code structures that map directly to real-life entities and structuring code using classes and objects signifies the application of core OOP principles.
+3. **Core Building Blocks**: **Classes** and **Objects** serve as the foundational building blocks of the entire Object-Oriented Programming paradigm.
+4. **Major OOP Languages**: Prominent Object-Oriented programming languages include **C++**, **Java**, and **JavaScript** (JS).

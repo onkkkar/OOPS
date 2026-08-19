@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OOP Blueprints - Chapter 01</title>
+<meta name="description" content="Visual chapter notes on why OOP exists - from functional programming's breakdown to classes as blueprints and objects as instances.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="titleblock-wrap">
+  <div class="titleblock">
+    <div class="tb-main">
+      <span class="kicker">Course Notes · C++</span>
+      <h1>OOP&nbsp;Blueprints</h1>
+      <p>Why object-oriented programming exists - traced from where functional programming breaks down to the class/object model that fixes it.</p>
+    </div>
+    <div class="tb-cells" style="grid-column:2/4; grid-template-columns:1fr 1fr;">
+      <div class="tb-cell"><span class="lbl">Sheet</span><span class="val">01</span></div>
+      <div class="tb-cell"><span class="lbl">Chapter</span><span class="val">Intro to OOPS</span></div>
+      <div class="tb-cell"><span class="lbl">Scale</span><span class="val">Conceptual</span></div>
+      <div class="tb-cell"><span class="lbl">Language</span><span class="val">C++17</span></div>
+      <div class="tb-cell"><span class="lbl">Read Time</span><span class="val" id="read-time">…</span></div>
+      <div class="tb-cell"><span class="lbl">Rev</span><span class="val">01</span></div>
+      <div class="tb-cell wide"><span class="lbl">Core Equation</span><span class="val">Object = An Instance of a Class</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="toc" aria-label="Table of contents">
+    <span class="kicker">Contents</span>
+    <ol>
+      <li><a href="#what-is-oops"><span class="num">01</span>What is OOPS?</a></li>
+      <li><a href="#why-do-we-need-oops"><span class="num">02</span>Why Do We Need OOPS?</a></li>
+      <li><a href="#the-paradigm-before-oops-functional-programming"><span class="num">03</span>The Paradigm Before OOPS</a></li>
+      <li><a href="#case-study-modelling-a-student"><span class="num">04</span>Case Study: A Student</a></li>
+      <li><a href="#limitations-of-functional-programming"><span class="num">05</span>Limitations of FP</a>
+        <ul class="sub">
+          <li><a href="#1-doesnt-model-real-world-entities-well">1 · Poor real-world modelling</a></li>
+          <li><a href="#2-adding-new-data-requires-modifying-every-function-that-needs-it">2 · Signature ripple</a></li>
+          <li><a href="#3-global-data-has-no-privacy">3 · No data privacy</a></li>
+          <li><a href="#4-no-clear-boundaries-between-data-and-behaviour">4 · No boundaries</a></li>
+          <li><a href="#5-no-modularity---code-becomes-monolithic">5 · No modularity</a></li>
+        </ul>
+      </li>
+      <li><a href="#towards-a-solution-the-container-idea"><span class="num">06</span>The Container Idea</a></li>
+      <li><a href="#what-is-oop-object-oriented-programming-system"><span class="num">07</span>What is OOP?</a></li>
+      <li><a href="#objects-and-classes"><span class="num">08</span>Objects and Classes</a></li>
+      <li><a href="#attributes--behaviour"><span class="num">09</span>Attributes &amp; Behaviour</a></li>
+      <li><a href="#summary"><span class="num">10</span>Summary</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="what-is-oops">
+      <div class="sec-head"><span class="idx">01</span><h2>What is OOPS?</h2></div>
+      <div class="prose">
+        <p>OOPS stands for <strong>Object Oriented Programming System(s)</strong> - a programming paradigm: a way of structuring and thinking about code.</p>
+        <p>To actually understand <em>what</em> it is and <em>why</em> it matters, it helps more to see the problem it solves than to memorize the definition. So before defining OOPS any further, we look first at the paradigm that came before it, and where that paradigm starts to struggle.</p>
+      </div>
+    </section>
+
+    <section id="why-do-we-need-oops">
+      <div class="sec-head"><span class="idx">02</span><h2>Why Do We Need OOPS?</h2></div>
+      <div class="prose">
+        <p>OOPS came into existence because the programming paradigm used before it - <strong>Functional Programming</strong> - ran into real difficulties as programs grew larger and modeled more real-world things. To see why OOPS was needed, we first need to understand functional programming, then watch it break down on a concrete example.</p>
+      </div>
+    </section>
+
+    <section id="the-paradigm-before-oops-functional-programming">
+      <div class="sec-head"><span class="idx">03</span><h2>The Paradigm Before OOPS</h2></div>
+      <div class="prose">
+        <h3>How Functional Programming Works</h3>
+        <p>Inside <code>main()</code>, we call a function. That function may call another function, which may call another, and so on. Each function does its own work and, when it finishes, optionally returns a value back to whoever called it. Once everything unwinds back to <code>main()</code>, <code>main()</code> itself returns, and the program exits.</p>
+        <p>When we call a function, we pass it <strong>arguments</strong> - the data it needs to do its job - and it may give us back an <strong>output</strong> via a return value.</p>
+      </div>
+    </section>
+
+    <section id="case-study-modelling-a-student">
+      <div class="sec-head"><span class="idx">04</span><h2>Case Study: Modelling a Student</h2></div>
+      <div class="prose">
+        <h3>The Requirement</h3>
+        <p>Say we need to write a program for <strong>100 students</strong>, where each student has:</p>
+        <ul>
+          <li>their own <strong>properties</strong>: <code>id</code>, <code>age</code>, <code>name</code></li>
+          <li>their own <strong>behaviours</strong>: <code>study()</code>, <code>eat()</code>, <code>sleep()</code></li>
+        </ul>
+        <p>On top of that, the program has one piece of data shared by everyone - the school's name, <code>schoolName</code> - which functional programming can only express as a <strong>global variable</strong>.</p>
+        <aside class="marginnote"><span class="mn-term">Global Variable</span>Declared outside every function. Visible and writable from anywhere in the file - no owner, no access control.</aside>
+        <p>Let's solve this the only way functional programming lets us: with plain variables and plain functions.</p>
+        <div class="ref"><span class="p">source →</span> coding/1. functional-programming.cpp</div>
+
+        <h3><span class="tag">Attempt 1</span>One Student</h3>
+        <p>For a single student, this reads naturally enough:</p>
+      </div>
+
+      <div class="codecap"><span>1. functional-programming.cpp</span><span>student behaviours</span></div>
+      <pre class="code"><code><span class="kw">void</span> <span class="fn">study</span>(<span class="ty">int</span> id, <span class="ty">int</span> age, <span class="ty">string</span> name)
+{
+    cout &lt;&lt; name &lt;&lt; <span class="str">" (id: "</span> &lt;&lt; id &lt;&lt; <span class="str">", age: "</span> &lt;&lt; age &lt;&lt; <span class="str">") is Studying at "</span> &lt;&lt; schoolName &lt;&lt; endl;
+}
+
+<span class="kw">void</span> <span class="fn">eat</span>(<span class="ty">int</span> id, <span class="ty">int</span> age, <span class="ty">string</span> name)
+{
+    cout &lt;&lt; name &lt;&lt; <span class="str">" is Eating"</span> &lt;&lt; endl;
+}
+
+<span class="kw">void</span> <span class="fn">sleep</span>(<span class="ty">int</span> id, <span class="ty">int</span> age, <span class="ty">string</span> name)
+{
+    cout &lt;&lt; name &lt;&lt; <span class="str">" is Sleeping"</span> &lt;&lt; endl;
+}</code></pre>
+
+      <div class="prose"><p>and inside <code>main()</code> we keep that one student's data as plain variables and hand it to each behaviour:</p></div>
+      <pre class="code"><code><span class="ty">int</span> id = <span class="str">1</span>;
+<span class="ty">int</span> age = <span class="str">20</span>;
+<span class="ty">string</span> name = <span class="str">"Rahul"</span>;
+
+<span class="fn">study</span>(id, age, name);
+<span class="fn">eat</span>(id, age, name);
+<span class="fn">sleep</span>(id, age, name);</code></pre>
+
+      <div class="prose">
+        <p>This looks fine - for one student. The trouble starts when we try to scale it to 100.</p>
+        <h3>Scaling to 100 Students</h3>
+        <h4>Option A - Duplicate Variables</h4>
+        <p>We give every student their own numbered set of variables: <code>id1</code>, <code>id2</code>, <code>id3</code> … <code>age1</code>, <code>age2</code> … and so on.</p>
+      </div>
+      <pre class="code"><code><span class="kw">void</span> <span class="fn">duplicateVariables</span>()
+{
+    <span class="ty">int</span> id1 = <span class="str">1</span>, id2 = <span class="str">2</span>, id3 = <span class="str">3</span>;
+    <span class="ty">int</span> age1 = <span class="str">20</span>, age2 = <span class="str">21</span>, age3 = <span class="str">19</span>;
+    <span class="ty">string</span> name1 = <span class="str">"Rahul"</span>, name2 = <span class="str">"Aman"</span>, name3 = <span class="str">"Simran"</span>;
+
+    <span class="fn">study</span>(id1, age1, name1);
+    <span class="fn">study</span>(id2, age2, name2);
+    <span class="fn">study</span>(id3, age3, name3);
+
+    <span class="cm">// compiles fine, but silently wrong - mixed up students' data</span>
+    <span class="fn">study</span>(id1, age2, name3);
+}</code></pre>
+      <div class="prose">
+        <p>For <strong>100</strong> students, that's <code>id1..id100</code>, <code>age1..age100</code>, and <code>name1..name100</code> - 300 separate variables for what is conceptually a single kind of thing, "a student." Worse, nothing stops us from calling <code>study(id1, age2, name3)</code> - mixing up three different students' data in one call. It compiles fine and runs; it's just silently wrong, because nothing in the language says <code>id1</code>, <code>age1</code>, and <code>name1</code> belong together.</p>
+        <h4>Option B - Parallel Arrays</h4>
+        <p>Instead of numbered variables, we use one array per property:</p>
+      </div>
+      <pre class="code"><code><span class="kw">void</span> <span class="fn">parallelArrays</span>()
+{
+    <span class="ty">int</span> ids[<span class="str">3</span>] = {<span class="str">1</span>, <span class="str">2</span>, <span class="str">3</span>};
+    <span class="ty">int</span> ages[<span class="str">3</span>] = {<span class="str">20</span>, <span class="str">21</span>, <span class="str">19</span>};
+    <span class="ty">string</span> names[<span class="str">3</span>] = {<span class="str">"Rahul"</span>, <span class="str">"Aman"</span>, <span class="str">"Simran"</span>};
+
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="str">0</span>; i &lt; <span class="str">3</span>; i++)
+    {
+        <span class="cm">// We MUST remember that index i means the same student in</span>
+        <span class="cm">// every single array. Nothing enforces that correspondence</span>
+        <span class="cm">// except our own discipline while writing the loop.</span>
+        <span class="fn">study</span>(ids[i], ages[i], names[i]);
+    }
+}</code></pre>
+      <div class="prose">
+        <p>This is slightly less repetitive, but the underlying problem hasn't gone away: <code>ids[i]</code>, <code>ages[i]</code>, and <code>names[i]</code> are only "the same student" because <em>we</em> keep every array in sync by hand. If any one array gets sorted, filtered, or updated independently of the others, the correspondence silently breaks.</p>
+        <p><strong>Note:</strong> even at just 3 students, this code already feels messy and fragile. At 100 students - with more properties and behaviours added over time - it becomes genuinely unmanageable.</p>
+      </div>
+    </section>
+
+    <section id="limitations-of-functional-programming">
+      <div class="sec-head"><span class="idx">05</span><h2>Limitations of Functional Programming</h2></div>
+      <div class="prose"><p>Looking back at <code>1. functional-programming.cpp</code>, we can now name exactly what's going wrong.</p></div>
+
+      <section class="sub" id="1-doesnt-model-real-world-entities-well">
+        <h3><span class="tag">1</span>Doesn't Model Real-World Entities Well</h3>
+        <div class="prose">
+          <p>In the real world, a student is <strong>one thing</strong>. You point at Rahul and that single person carries his id, his age, his name, and the fact that he studies, eats, and sleeps. It's all one package.</p>
+          <p>In our code, that one thing has been chopped into six unrelated pieces:</p>
+        </div>
+
+        <figure class="figure">
+          <div class="figure-inner">
+            <span class="tick tl"></span><span class="tick br"></span>
+            <div class="scatter-grid">
+              <div class="entity-box">
+                <h5>Real World - Rahul</h5>
+                <ul>
+                  <li>id: 1</li>
+                  <li>age: 20</li>
+                  <li>name: "Rahul"</li>
+                </ul>
+                <div class="behav">
+                  <ul><li>study()</li><li>eat()</li><li>sleep()</li></ul>
+                </div>
+              </div>
+              <div>
+                <div class="chip-field">
+                  <span class="chip">int id = 1; <em style="opacity:.6">(loose var)</em></span>
+                  <span class="chip">int age = 20; <em style="opacity:.6">(loose var)</em></span>
+                  <span class="chip">string name; <em style="opacity:.6">(loose var)</em></span>
+                  <span class="chip">void study(...) <em style="opacity:.6">(loose fn)</em></span>
+                  <span class="chip">void eat(...) <em style="opacity:.6">(loose fn)</em></span>
+                  <span class="chip">void sleep(...) <em style="opacity:.6">(loose fn)</em></span>
+                  <span class="chip warn">void teach(...) - mixed into the same file!</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <figcaption><span class="fig-no">FIG. 01</span> - one entity, chopped into six unrelated, unbounded pieces</figcaption>
+        </figure>
+
+        <div class="prose">
+          <p>Nothing in the language says these six belong together. They're just three loose variables and three loose functions sitting in a file. "Rahul" only exists in <em>our head</em> - we have to remember that <code>id</code>, <code>age</code>, and <code>name</code> are one person, and remember to hand them to <code>study()</code> on every call so that <code>study()</code> knows whom it is talking about.</p>
+          <p>And this is the small version of the problem. A real student has far more than three properties - roll number, marks, attendance, fees, address, class, section - and far more than three behaviours. Each one added is one more loose piece to track by hand. Modelling <strong>one</strong> student is already a chore.</p>
+          <h4>Now Add Teachers</h4>
+          <p>Now the school wants teachers too. A teacher has their own properties - <code>teacherId</code>, <code>teacherName</code>, <code>subject</code>, <code>salary</code> - and their own behaviours - <code>teach()</code>, <code>grade()</code>, <code>takeAttendance()</code>. So we do the exact same thing again: more loose variables, more loose functions, dumped into the same flat file next to the student ones.</p>
+          <p>So the code never actually contains a "Student" or a "Teacher." It only contains a growing pile of variables and functions that we, the programmers, have privately agreed to think of as students and teachers. That agreement is not written down anywhere the compiler can see - which is precisely why functional programming models real-world entities so poorly.</p>
+        </div>
+      </section>
+
+      <section class="sub" id="2-adding-new-data-requires-modifying-every-function-that-needs-it">
+        <h3><span class="tag">2</span>Adding New Data Ripples Everywhere</h3>
+        <div class="prose">
+          <p>Suppose we now add a new property, <code>numberOfSubjects</code>, and only <code>study()</code> actually needs it - to print how many subjects a student is taking. <code>eat()</code> and <code>sleep()</code> never touch it, so their signatures stay exactly as they are; that part isn't as bad as it might sound.</p>
+          <p>But <code>study()</code>'s signature did change, from three parameters to four:</p>
+        </div>
+        <aside class="marginnote"><span class="mn-term">Signature</span>A function's name plus its parameter types. Every call site must match it exactly, or the build breaks.</aside>
+        <pre class="code"><code><span class="kw">void</span> <span class="fn">study</span>(<span class="ty">int</span> id, <span class="ty">int</span> age, <span class="ty">string</span> name, <span class="ty">int</span> numberOfSubjects)
+{
+    cout &lt;&lt; name &lt;&lt; <span class="str">" is Studying "</span> &lt;&lt; numberOfSubjects &lt;&lt; <span class="str">" subjects"</span> &lt;&lt; endl;
+}</code></pre>
+        <div class="prose"><p>and that ripples outward. Every place <code>study()</code> gets called anywhere in the file now has one argument too few, and won't compile until it's fixed by hand:</p></div>
+        <pre class="code"><code><span class="fn">study</span>(id, age, name, numberOfSubjects);                    <span class="cm">// main()</span>
+<span class="fn">study</span>(id1, age1, name1, subjects1);                        <span class="cm">// duplicateVariables()</span>
+<span class="fn">study</span>(id2, age2, name2, subjects2);
+<span class="fn">study</span>(id3, age3, name3, subjects3);
+<span class="fn">study</span>(ids[i], ages[i], names[i], subjectsCount[i]);         <span class="cm">// parallelArrays()</span></code></pre>
+        <div class="prose"><p>Five call sites, scattered across the file, all needing to be found and fixed by hand - for one new property on one function.</p></div>
+
+        <figure class="figure">
+          <div class="figure-inner">
+            <span class="tick tl"></span><span class="tick br"></span>
+            <div class="fan-wrap">
+              <div class="node root">Add numberOfSubjects to student properties</div>
+              <div class="stem"></div>
+              <div class="node warn" style="max-width:460px">study(id, age, name, numberOfSubjects) - signature changed!</div>
+              <div class="fan-row">
+                <div class="fan-item"><div class="node">main() call site<br><span style="opacity:.65">needs update</span></div></div>
+                <div class="fan-item"><div class="node">duplicateVariables()<br><span style="opacity:.65">3 calls to update</span></div></div>
+                <div class="fan-item"><div class="node">parallelArrays() loop<br><span style="opacity:.65">array needs update</span></div></div>
+                <div class="fan-item"><div class="node">dailyRoutine()<br><span style="opacity:.65">must forward unused param</span></div></div>
+              </div>
+            </div>
+          </div>
+          <figcaption><span class="fig-no">FIG. 02</span> - one new property, five call sites to hunt down by hand</figcaption>
+        </figure>
+
+        <div class="prose">
+          <p>And this is the small version. The moment some <em>other</em>, unrelated function calls <code>study()</code> on a student's behalf - say a <code>dailyRoutine()</code> that just runs <code>study(); eat(); sleep();</code> in sequence - that function has to start accepting <code>numberOfSubjects</code> too, purely to forward it along, even though it never uses the value itself. Nothing marks <code>numberOfSubjects</code> as "belongs to the student, available wherever the student's data already is." It has to be re-declared, one parameter at a time, in every function that even indirectly touches it.</p>
+        </div>
+      </section>
+
+      <section class="sub" id="3-global-data-has-no-privacy">
+        <h3><span class="tag">3</span>Global Data Has No Privacy</h3>
+        <div class="prose">
+          <h4>The Story</h4>
+          <p>All 100 of our students go to the same school, and their behaviours need to know its name - <code>study()</code> should be able to say "Rahul … is Studying at DPS". The name is identical for every one of them, so making it a fourth per-student property and copying <code>"DPS"</code> into all 100 students would be pointless. What we want is <strong>one</strong> shared piece of data that every <em>student</em> function can reach.</p>
+          <p>Functional programming gives us exactly one tool for that: a <strong>global variable</strong>.</p>
+        </div>
+        <pre class="code"><code><span class="cm">// Global Data</span>
+<span class="ty">string</span> schoolName = <span class="str">"DPS"</span>;</code></pre>
+        <div class="prose"><p>And it works. <code>study()</code> reads it without being passed it:</p></div>
+        <pre class="code"><code><span class="kw">void</span> <span class="fn">study</span>(<span class="ty">int</span> id, <span class="ty">int</span> age, <span class="ty">string</span> name)
+{
+    cout &lt;&lt; name &lt;&lt; <span class="str">" (id: "</span> &lt;&lt; id &lt;&lt; <span class="str">", age: "</span> &lt;&lt; age &lt;&lt; <span class="str">") is Studying at "</span> &lt;&lt; schoolName &lt;&lt; endl;
+}</code></pre>
+        <div class="out">Rahul (id: 1, age: 20) is Studying at DPS</div>
+        <div class="prose">
+          <p>So far, so good - this is exactly what we asked for.</p>
+          <h4>The Problem</h4>
+          <p>Now our program grows and we add <code>teach()</code>. It is a <strong>teacher-side</strong> function; it has nothing to do with student data at all. But <code>schoolName</code> is global, so <code>teach()</code> can freely read it <em>and silently overwrite it</em>:</p>
+        </div>
+        <pre class="code"><code><span class="cm">// --- unrelated to students, but can still read AND overwrite schoolName - global data has no privacy ---</span>
+<span class="kw">void</span> <span class="fn">teach</span>()
+{
+    cout &lt;&lt; <span class="str">"Teaching a class at "</span> &lt;&lt; schoolName &lt;&lt; endl;
+    schoolName = <span class="str">"Hacked High"</span>;
+}</code></pre>
+        <div class="prose"><p>Back in <code>main()</code>, nobody asked for that change, but everyone gets it:</p></div>
+        <pre class="code"><code><span class="fn">teach</span>();
+
+<span class="cm">// schoolName was silently changed by a function that doesn't own it</span>
+cout &lt;&lt; <span class="str">"School is now: "</span> &lt;&lt; schoolName &lt;&lt; endl;</code></pre>
+        <div class="out">Teaching a class at DPS
+School is now: Hacked High</div>
+
+        <figure class="figure">
+          <div class="figure-inner">
+            <span class="tick tl"></span><span class="tick br"></span>
+            <div class="fan-wrap">
+              <div class="node root">GLOBAL SCOPE - string schoolName = "DPS"</div>
+              <div class="fan-row">
+                <div class="fan-item">
+                  <div class="node">Student Functions<br>study()</div>
+                  <div class="flow-label">allowed read ✓ (intended reader)</div>
+                </div>
+                <div class="fan-item">
+                  <div class="node warn">Teacher Functions<br>teach()</div>
+                  <div class="flow-label violate">reads AND overwrites ⚠ (unintended access)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <figcaption><span class="fig-no">FIG. 03</span> - unintended global data leakage: everyone can read it, everyone can write it</figcaption>
+        </figure>
+
+        <div class="prose">
+          <p>Ask the real question here: <strong>did we ever want <code>teach()</code> to have that access?</strong> No. We wanted <code>schoolName</code> shared among the <em>students</em>, not exposed to every function in the program. But that choice was never ours to make. The moment we declare a global in functional programming, everyone can read it and everyone can write to it. There is no way to say "this data belongs to the students, and only student behaviours may touch it."</p>
+          <p>So one unrelated function can quietly corrupt data the rest of the program depends on, and the compiler never warns us - because as far as the language is concerned, nothing was violated. There was no rule to violate in the first place.</p>
+        </div>
+      </section>
+
+      <section class="sub" id="4-no-clear-boundaries-between-data-and-behaviour">
+        <h3><span class="tag">4</span>No Clear Boundaries Between Data and Behaviour</h3>
+        <div class="prose">
+          <p>That last point is really a symptom of something bigger: in functional programming there is <strong>no boundary</strong> we can draw around a concept.</p>
+          <p>Look at how the file is laid out. <code>schoolName</code> sits at the top as a loose global. A student's <code>id</code>, <code>age</code>, and <code>name</code> are loose variables inside <code>main()</code>. <code>study()</code>, <code>eat()</code>, and <code>sleep()</code> are loose functions further down, sitting at exactly the same level as <code>teach()</code> - which belongs to a completely different concept. The file is one flat surface, and everything on it can see everything else.</p>
+          <p>The only thing that makes <code>study()</code> "a student behaviour" and <code>teach()</code> "a teacher behaviour" is that <em>we named them that way</em>. The language sees four equally-anonymous functions. So:</p>
+          <ul>
+            <li>Nothing says <code>id</code>, <code>age</code>, and <code>name</code> belong together as one student - which is exactly why <code>study(id1, age2, name3)</code> compiles.</li>
+            <li>Nothing says <code>study()</code> belongs <em>with</em> that data - which is why the data has to be passed in by hand on every single call.</li>
+            <li>Nothing says <code>teach()</code> is on the outside of the student concept - which is why it can reach straight into <code>schoolName</code>.</li>
+          </ul>
+          <p>Every one of those boundaries exists only in the programmer's head. What we actually need is a way to draw the boundary <strong>in the code itself</strong>: a line where we can say "this data and these behaviours are one thing - inside is theirs, outside stays out."</p>
+        </div>
+
+        <figure class="figure">
+          <div class="figure-inner">
+            <span class="tick tl"></span><span class="tick br"></span>
+            <div class="compare-grid">
+              <div>
+                <div class="compare-cap">Functional - flat &amp; unbounded</div>
+                <div class="flat-strip">
+                  <span class="chip">schoolName</span><span class="chip">id, age, name</span><span class="chip">study()</span><span class="chip">eat()</span><span class="chip warn">teach()</span>
+                </div>
+              </div>
+              <div>
+                <div class="compare-cap">OOP target - encapsulated &amp; bounded</div>
+                <div class="bounded-pair">
+                  <div class="bounded-box">
+                    <h6>Student Boundary</h6>
+                    <p>Data: id, age, name, schoolName<br>Behaviours: study(), eat()</p>
+                  </div>
+                  <div class="bounded-box teacher">
+                    <h6>Teacher Boundary</h6>
+                    <p>Data: teacherId, subject<br>Behaviours: teach(), grade()</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <figcaption><span class="fig-no">FIG. 04</span> - one flat, exposed surface vs. two isolated boundaries</figcaption>
+        </figure>
+      </section>
+
+      <section class="sub" id="5-no-modularity---code-becomes-monolithic">
+        <h3><span class="tag">5</span>No Modularity - Code Becomes Monolithic</h3>
+        <div class="prose">
+          <p>As we add more students, more teachers, more subjects - all handled the same way, as more flat variables and more flat functions - everything piles into one undifferentiated set of globals and functions with no sub-grouping. There is no unit smaller than "the whole file" to reason about, test, or reuse. Functional programming code like this can become monolithic and increasingly difficult to maintain as it grows.</p>
+          <aside class="marginnote"><span class="mn-term">Modularity</span>Building a system as separate, self-contained units that can be reasoned about, tested, and reused on their own.</aside>
+        </div>
+      </section>
+    </section>
+
+    <section id="towards-a-solution-the-container-idea">
+      <div class="sec-head"><span class="idx">06</span><h2>Towards a Solution: The "Container" Idea</h2></div>
+      <div class="prose">
+        <p>Imagine, instead, a single container - a <strong>box</strong> - that holds data (<code>id</code>, <code>name</code>, <code>age</code>) together, <em>and</em> holds the behaviours (<code>study()</code>, <code>eat()</code>, <code>sleep()</code>) that act on them, all bound together as <strong>one unified unit</strong>.</p>
+      </div>
+
+      <figure class="figure">
+        <div class="figure-inner">
+          <span class="tick tl"></span><span class="tick br"></span>
+          <div class="blueprint-card" style="margin:0 auto;">
+            <div class="bp-head">Student Container</div>
+            <div class="bp-body">
+              <div class="bp-section">
+                <span class="bp-label">Data / State</span>
+                <ul><li>id: 101</li><li>name: "Rahul"</li><li>age: 20</li></ul>
+              </div>
+              <div class="bp-section">
+                <span class="bp-label">Behaviours / Methods</span>
+                <ul><li>study()</li><li>eat()</li><li>sleep()</li></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption><span class="fig-no">FIG. 05</span> - data and behaviour, sealed into one unit</figcaption>
+      </figure>
+
+      <div class="prose">
+        <h3>Key Breakthroughs of the Container Model</h3>
+        <ol>
+          <li><strong>Self-Contained Representation</strong> - filling in that container with real values is what makes something "a student." Whoever holds a fully filled-in container has all the information and behaviour tags that define a student.</li>
+          <li><strong>Data Privacy &amp; Protection</strong> - this fixes the privacy problem inherent in functional/procedural programming. Data sealed <em>inside</em> the box can be reached <strong>only</strong> by the box's own behaviours.
+            <br><em>Contrast:</em> unlike the global <code>schoolName</code> (which <code>teach()</code> could read and overwrite even though it had no business doing so), encapsulation in OOP ensures strict boundary access.</li>
+          <li><strong>Formalizing Class and Object</strong> - this "container" or blueprint is formally introduced as a <strong>Class</strong>; a container filled in with real values is what we call an <strong>Object</strong>.</li>
+          <li><strong>Restoring Modularity</strong> - OOPS brings back the modularity that functional programming lost, grouping related data and behaviour into self-contained, reusable units instead of one flat pile of globals and functions.</li>
+        </ol>
+        <aside class="marginnote"><span class="mn-term">Encapsulation</span>Bundling data with the behaviours that act on it, then restricting outside access - the mechanism behind "Data Privacy &amp; Protection" above.</aside>
+      </div>
+    </section>
+
+    <section id="what-is-oop-object-oriented-programming-system">
+      <div class="sec-head"><span class="idx">07</span><h2>What is OOP?</h2></div>
+      <div class="callout">"OOP is like Life! As things exist in Life, the same concepts exist in OOPS."</div>
+      <div class="prose">
+        <p>In life, we deal with various physical and abstract entities. For example:</p>
+        <ul>
+          <li><strong>Bird / Sparrow</strong> - "Sparrow" is an abstract term or concept, but in reality there can be multiple individual sparrows (Sparrow 1, Sparrow 2, Sparrow 3, …), each possessing its own specific attributes and behaviours.</li>
+          <li><strong>Person</strong> - "Person" is a concept, while individual people (Person 1, Person 2, Person 3, …) have their own attributes (name, age, height) and behaviours (speak, eat).</li>
+        </ul>
+        <p>If we want to solve real-world problems and depict real-world systems through code, <strong>OOP is the paradigm of choice</strong>. Just like a Student is a real-world entity with attributes and behaviours, we can model and construct exact software representations of a Student using OOP.</p>
+        <h3>Core Characteristics of OOP</h3>
+        <ol>
+          <li><strong>Real-World Problem Solving</strong> - a paradigm designed to solve real-world problems by modeling real-world systems directly within programming languages.</li>
+          <li><strong>Object Communication</strong> - a programming style that involves dividing a program into distinct object components that communicate with one another.</li>
+          <li><strong>Entity-Based Coding Style</strong> - software is structured around real-world entities/objects (Student, Teacher, Car, Bus, etc.), where every object maintains its own private state/attributes and associated behaviours.</li>
+          <li><strong>Data and Behaviour Unification</strong> - the fundamental idea is to combine both data and behaviour into a single unit to promote modularity.
+            <br><em>The Blueprint Analogy:</em> imagine creating a box labeled Student. Inside it are all data fields (<code>id</code>, <code>name</code>, <code>age</code>) and behaviours (<code>study()</code>, <code>eat()</code>, <code>sleep()</code>). This box is a <strong>blueprint</strong>. Anyone following this exact blueprint is termed a Student - student <code>s1</code> has all these data fields and behaviours, as do <code>s2</code>, <code>s3</code>, and so on. This mirrors the real world: the blueprint/container is a <strong>Template (Class)</strong>, whereas the actual entities <code>s1</code>, <code>s2</code>, <code>s3</code> created from it are <strong>Objects</strong>.</li>
+          <li><strong>Enhanced Modularity, Reusability, and Maintainability</strong> - OOP promotes modularity by encapsulating data and behaviour into a container/class, greatly enhancing reusability and maintainability across a program.</li>
+          <li><strong>"OOP is Life"</strong> - OOP mirrors real-world structures, making complex software architectures intuitive to design, reason about, and maintain.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="objects-and-classes">
+      <div class="sec-head"><span class="idx">08</span><h2>Objects and Classes</h2></div>
+      <div class="prose">
+        <ol>
+          <li><strong>Real-World Entities Have State &amp; Behaviour</strong> - entities like cars, persons, and students have state (data) and behaviour (actions).</li>
+          <li><strong>From Real World to Programming</strong> - a student named <strong>Rahul</strong> is a real-world entity. In programming, Rahul is represented as an <strong>Object</strong>.</li>
+          <li><strong>The Blueprint (Class)</strong> - what defines how an object will look and act? There must be a blueprint or template: the <strong>Class</strong>.</li>
+          <li><strong>Fundamental Definition</strong> - Object = An Instance of a Class.</li>
+        </ol>
+        <aside class="marginnote"><span class="mn-term">Instance</span>One concrete realization of a class's blueprint, built with real, specific values instead of just field names.</aside>
+        <h3>Concrete Example: Car Class vs. Car Objects</h3>
+        <ul>
+          <li><strong>Car Template (Class)</strong> - defines properties: <code>bodyShape</code>, <code>color</code>, <code>tyres</code>, <code>seats</code>.</li>
+          <li><strong>Fortuner (Object)</strong> - bodyShape = SUV, color = White, tyres = 4, seats = 7.</li>
+          <li><strong>WagonR (Object)</strong> - bodyShape = Hatchback, color = White, tyres = 4, seats = 4.</li>
+        </ul>
+      </div>
+
+      <figure class="figure">
+        <div class="figure-inner">
+          <span class="tick tl"></span><span class="tick br"></span>
+          <div class="class-fan">
+            <div class="blueprint-card">
+              <div class="bp-head">Class: Car</div>
+              <div class="bp-body">
+                <div class="bp-section">
+                  <span class="bp-label">Properties</span>
+                  <ul><li>bodyShape: string</li><li>color: string</li><li>tyres: int</li><li>seats: int</li></ul>
+                </div>
+              </div>
+            </div>
+            <div class="instance-stems"><div class="stem"></div></div>
+            <div class="instance-row">
+              <div class="instance-card">
+                <div class="ic-head">Object: Fortuner</div>
+                <div class="ic-body">
+                  <div>bodyShape = "SUV"</div>
+                  <div>color = "White"</div>
+                  <div>tyres = 4</div>
+                  <div>seats = 7</div>
+                </div>
+              </div>
+              <div class="instance-card">
+                <div class="ic-head">Object: WagonR</div>
+                <div class="ic-body">
+                  <div>bodyShape = "Hatchback"</div>
+                  <div>color = "White"</div>
+                  <div>tyres = 4</div>
+                  <div>seats = 4</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption><span class="fig-no">FIG. 06</span> - one Car blueprint, two independent objects built from it</figcaption>
+      </figure>
+
+      <div class="prose"><p><em>Summary:</em> the actual cars on the road (Fortuner, WagonR) are real <strong>Objects</strong>. The abstract idea/blueprint of what a car is constitutes the <strong>Class / Blueprint / Template</strong>. An object is the variable/entity that actually possesses that blueprint's structure.</p></div>
+    </section>
+
+    <section id="attributes--behaviour">
+      <div class="sec-head"><span class="idx">09</span><h2>Attributes &amp; Behaviour</h2></div>
+      <div class="prose">
+        <ol>
+          <li><strong>Attributes (State / Properties)</strong> - the data elements, properties, or variables belonging to an object (e.g. <code>name</code>, <code>age</code>, <code>height</code>).</li>
+          <li><strong>Behaviour (Methods / Functions)</strong> - the functions or actions that an object can execute (e.g. <code>speak()</code>, <code>eat()</code>).</li>
+        </ol>
+        <h3>Visual Representation: Person Class &amp; Instances</h3>
+      </div>
+
+      <figure class="figure">
+        <div class="figure-inner">
+          <span class="tick tl"></span><span class="tick br"></span>
+          <div class="class-fan">
+            <div class="blueprint-card">
+              <div class="bp-head">Class: Person</div>
+              <div class="bp-body">
+                <div class="bp-section">
+                  <span class="bp-label">Data / State</span>
+                  <ul><li>name: string</li><li>age: int</li><li>height: double</li></ul>
+                </div>
+                <div class="bp-section">
+                  <span class="bp-label">Behaviours</span>
+                  <ul><li>speak()</li><li>eat()</li></ul>
+                </div>
+              </div>
+            </div>
+            <div class="instance-stems"><div class="stem"></div></div>
+            <div class="instance-row">
+              <div class="instance-card">
+                <div class="ic-head">Object: Rahul</div>
+                <div class="ic-body"><div>name = "Rahul"</div><div>age = 20</div><div>height = 5.9</div></div>
+                <div class="ic-behav"><span>speak()</span><span>eat()</span></div>
+              </div>
+              <div class="instance-card">
+                <div class="ic-head">Object: Kunal</div>
+                <div class="ic-body"><div>name = "Kunal"</div><div>age = 22</div><div>height = 6.0</div></div>
+                <div class="ic-behav"><span>speak()</span><span>eat()</span></div>
+              </div>
+              <div class="instance-card">
+                <div class="ic-head">Object: Ram</div>
+                <div class="ic-body"><div>name = "Ram"</div><div>age = 21</div><div>height = 5.8</div></div>
+                <div class="ic-behav"><span>speak()</span><span>eat()</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption><span class="fig-no">FIG. 07</span> - three objects, one shared blueprint, independent state</figcaption>
+      </figure>
+
+      <div class="prose"><p>All of them - Rahul, Ram, and Kunal - are individual instances of the <code>Person</code> class. Every one of them is an <strong>Object</strong> possessing its own unique attribute values while sharing the common set of behaviours defined by the <code>Person</code> blueprint.</p></div>
+    </section>
+
+    <section id="summary">
+      <div class="sec-head"><span class="idx">10</span><h2>Summary</h2></div>
+      <div class="summary-grid">
+        <div class="summary-card"><div class="n">01</div><p><strong>OOP Paradigm</strong> - Object-Oriented Programming is a paradigm used to model and implement real-world objects in software.</p></div>
+        <div class="summary-card"><div class="n">02</div><p><strong>Real-World Alignment</strong> - identifying code structures that map directly to real-life entities, and structuring code using classes and objects, signifies the application of core OOP principles.</p></div>
+        <div class="summary-card"><div class="n">03</div><p><strong>Core Building Blocks</strong> - Classes and Objects serve as the foundational building blocks of the entire Object-Oriented Programming paradigm.</p></div>
+        <div class="summary-card"><div class="n">04</div><p><strong>Major OOP Languages</strong> - prominent Object-Oriented languages include C++, Java, and JavaScript (JS).</p></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="sheet">
+  <span>Chapter 01 - Intro to OOPS</span>
+  <span>Object = An Instance of a Class</span>
+</footer>
+
+<div class="controls">
+  <button id="width-toggle" class="ctrl-btn" type="button" aria-label="Toggle full width" title="Expand width">⊞</button>
+  <button id="theme-toggle" class="ctrl-btn" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">☾</button>
+  <button id="back-to-top" class="ctrl-btn ctrl-btn--totop" type="button" aria-label="Back to top" title="Back to top">↑</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

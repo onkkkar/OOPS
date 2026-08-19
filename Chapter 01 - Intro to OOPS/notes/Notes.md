@@ -466,8 +466,6 @@ Imagine, instead, a single container — a **box** — that holds data (`id`, `n
 
 > **"OOP is like Life! As things exist in Life, the same concepts exist in OOPS."**
 
-### 1. Real-World Modeling
-
 In life, we deal with various physical and abstract entities. For example:
 
 - **Bird / Sparrow**: "Sparrow" is an abstract term or concept, but in reality, there can be multiple individual sparrows (Sparrow 1, Sparrow 2, Sparrow 3, ...), each possessing its own specific attributes and behaviours.
@@ -475,7 +473,7 @@ In life, we deal with various physical and abstract entities. For example:
 
 If we want to solve real-world problems and depict real-world systems through code, **OOP is the paradigm of choice**. Just like a Student is a real-world entity with attributes and behaviours, we can model and construct exact software representations of a Student using OOP.
 
-### 2. Core Characteristics of OOP
+### Core Characteristics of OOP
 
 1. **Real-World Problem Solving**: A programming technology/paradigm designed to solve real-world problems by modeling real-world systems directly within programming languages.
 2. **Object Communication**: A programming style that involves dividing a program into distinct object components that communicate with one another.

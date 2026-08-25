@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 03 - Encapsulation | Object-Oriented Programming</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,600&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <div class="layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="toc-title">Chapter 03 Index</div>
+      <nav class="toc">
+        <ul>
+          <li><a href="#what-is-encapsulation">01. What is Encapsulation?</a></li>
+          <li class="sub-item"><a href="#capsule-analogy">The Capsule Analogy</a></li>
+          <li class="sub-item"><a href="#class-as-encapsulation">Class as Encapsulation</a></li>
+          <li><a href="#core-functions">02. Core Functions</a></li>
+          <li class="sub-item"><a href="#security-layer">Security Layer</a></li>
+          <li class="sub-item"><a href="#implementation-hiding">Implementation Hiding</a></li>
+          <li class="sub-item"><a href="#minimal-interface">Minimal Interface</a></li>
+          <li><a href="#student-case-study">03. Student Case Study</a></li>
+          <li class="sub-item"><a href="#teacher-interaction">Teacher Interaction</a></li>
+          <li class="sub-item"><a href="#security-diagram">Security Diagram</a></li>
+          <li><a href="#data-hiding">04. Data Hiding</a></li>
+          <li><a href="#access-modifiers">05. Access Modifiers</a></li>
+          <li class="sub-item"><a href="#public-specifier">Public</a></li>
+          <li class="sub-item"><a href="#private-specifier">Private</a></li>
+          <li class="sub-item"><a href="#protected-specifier">Protected</a></li>
+          <li><a href="#perfect-encapsulation">06. Perfect Encapsulation</a></li>
+          <li class="sub-item"><a href="#getters-setters">Getters and Setters</a></li>
+          <li><a href="#rules-gotchas">07. Rules & Gotchas</a></li>
+          <li><a href="#source-walkthrough">08. Source Code</a></li>
+          <li><a href="#summary">09. Summary</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Article Content -->
+    <main>
+      <!-- Hero Header -->
+      <header class="hero">
+        <div class="meta-badges">
+          <span class="tag">Module 03</span>
+          <span class="tag tag-blue">Core OOP Pillar</span>
+          <span class="tag tag-green" id="read-time">~12 min read</span>
+        </div>
+        <h1>CHAPTER 03 - ENCAPSULATION</h1>
+        <p class="subtitle">
+          Data packaging, algorithmic privacy, security boundaries, and controlled state mutation.
+        </p>
+      </header>
+
+      <!-- Section 1: Definition -->
+      <section id="what-is-encapsulation" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">01</span>
+          <h2>What is Encapsulation?</h2>
+        </div>
+        <p>
+          <strong>Encapsulation</strong> is the fundamental object-oriented mechanism that binds together data (attributes/state) and methods (behaviours/functions) into a single unified entity called a <code>class</code>, while establishing a strict security boundary around that data.
+        </p>
+
+        <div class="math-block">
+          $$\text{Encapsulation} = \text{Data (Attributes)} + \text{Methods (Behaviours)} + \text{Security Boundary}$$
+        </div>
+
+        <section id="capsule-analogy" class="sub">
+          <h3>The Capsule Analogy</h3>
+          <div class="callout">
+            <div class="callout-title">The Medical Analogy</div>
+            <p>
+              Like a medical capsule that seals diverse chemical ingredients inside a protective shell, a <code>class</code> encapsulates variables and functions together into a single contained unit, guarding the inner ingredients from external contamination.
+            </p>
+          </div>
+        </section>
+
+        <section id="class-as-encapsulation" class="sub">
+          <h3>Why a Class is an Example of Encapsulation</h3>
+          <ol>
+            <li><strong>Unified Packaging:</strong> A class bundles related fields like <code>id</code>, <code>name</code>, and <code>age</code> alongside the operations that act upon them (such as <code>study()</code> and <code>sleep()</code>).</li>
+            <li><strong>Access Barrier:</strong> A class dictates which members are exposed to the outside world and which members remain strictly private.</li>
+          </ol>
+        </section>
+      </section>
+
+      <!-- Section 2: Core Functions -->
+      <section id="core-functions" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">02</span>
+          <h2>Core Functions of Encapsulation</h2>
+        </div>
+        <p>
+          Encapsulation is not merely aesthetic organization; it delivers three critical engineering guarantees:
+        </p>
+
+        <div class="card-grid">
+          <div class="card" id="security-layer">
+            <span class="tag tag-rose">Function 1</span>
+            <div class="card-title">Security Layer</div>
+            <p>
+              Exposes only the specific information intended for the outer world. Prevents rogue functions or unauthorized callers from modifying internal state directly.
+            </p>
+          </div>
+
+          <div class="card" id="implementation-hiding">
+            <span class="tag tag-blue">Function 2</span>
+            <div class="card-title">Implementation Hiding</div>
+            <p>
+              Hides internal algorithms and memory layouts. The caller knows <em>what</em> an object does, without needing to know <em>how</em> it executes internally.
+            </p>
+          </div>
+
+          <div class="card" id="minimal-interface">
+            <span class="tag tag-green">Function 3</span>
+            <div class="card-title">Minimal Interface</div>
+            <p>
+              Presents a clean, high-level public API. Reduces coupling across modules and simplifies maintenance and debugging.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Case Study -->
+      <section id="student-case-study" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">03</span>
+          <h2>Case Study: The Student &amp; Teacher Interaction</h2>
+        </div>
+        <p>
+          Consider modeling a <code>Student</code> class with attributes <code>id</code>, <code>name</code>, <code>age</code>, <code>gfName</code> and behaviours <code>study()</code>, <code>sleep()</code>, <code>bunk()</code>, <code>eat()</code>, and <code>gfChatting()</code>.
+        </p>
+
+        <p>
+          We deliberately declare sensitive personal details (<code>age</code>, <code>gfName</code>) and personal activities (<code>gfChatting()</code>) as <strong><code>private</code></strong>. The student does not want to reveal their age, relationship details, or private chats to the external world.
+        </p>
+
+        <section id="teacher-interaction" class="sub">
+          <h3>Why the Teacher Does Not Need Implementation Details</h3>
+          <p>
+            When a <code>Teacher</code> instructs a student to sleep via <code>s1.sleep()</code>:
+          </p>
+          <ol>
+            <li><strong>Action Request:</strong> The teacher invokes the public method <code>s1.sleep()</code>.</li>
+            <li><strong>Implementation Shielding:</strong> Does the teacher need to know <em>how</em> the student sleeps, or inspect the internal code inside <code>sleep()</code>? <strong>NO.</strong></li>
+            <li><strong>Algorithmic Privacy:</strong> The teacher calls the public interface, while the student class completely conceals the underlying execution details. The same applies to <code>s1.study()</code>.</li>
+          </ol>
+        </section>
+
+        <section id="security-diagram" class="sub">
+          <h3>Visual Security Boundary</h3>
+          
+          <div class="shield-boundary">
+            <div class="shield-header">
+              <span class="tag tag-blue">Object Security Shield</span>
+              <span class="tag tag-rose">Encapsulated Boundary</span>
+            </div>
+            
+            <p><strong>Public Surface (Exposed to Teacher &amp; main):</strong></p>
+            <div class="pill-group">
+              <span class="pill pill-pub interactive-public">id</span>
+              <span class="pill pill-pub interactive-public">name</span>
+              <span class="pill pill-pub interactive-public">study()</span>
+              <span class="pill pill-pub interactive-public">sleep()</span>
+              <span class="pill pill-pub interactive-public">bunk()</span>
+            </div>
+
+            <p style="margin-top: 1.5rem;"><strong>Private Interior (Hidden from Outer World):</strong></p>
+            <div class="pill-group">
+              <span class="pill pill-priv interactive-private">age</span>
+              <span class="pill pill-priv interactive-private">gfName</span>
+              <span class="pill pill-priv interactive-private">gfChatting()</span>
+            </div>
+          </div>
+
+          <div class="diagram-box">
+            <pre class="diagram-pre">
++-------------------------------------------------------------------+
+|                        CLASS: Student                             |
+|-------------------------------------------------------------------|
+|  [ PUBLIC SECTION ] - Accessible Everywhere                       |
+|  + id: int                                                        |
+|  + name: string                                                   |
+|  + study(): void                                                  |
+|  + sleep(): void                                                  |
+|  + bunk(): void                                                   |
+|-------------------------------------------------------------------|
+|  [ PRIVATE SECTION ] - Hidden Within Class Only                   |
+|  - age: int                 (Blocked from external access)        |
+|  - gfName: string           (Blocked from external access)        |
+|  - gfChatting(): void       (Blocked from external access)        |
++-------------------------------------------------------------------+</pre>
+          </div>
+        </section>
+      </section>
+
+      <!-- Section 4: Data Hiding -->
+      <section id="data-hiding" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">04</span>
+          <h2>Encapsulation as Data Hiding</h2>
+        </div>
+        <p>
+          Because encapsulation shields internal state and algorithms from external classes or global scopes, it is universally termed <strong>Data Hiding</strong>.
+        </p>
+
+        <div class="callout">
+          <div class="callout-title">The Architectural Goal</div>
+          <p>
+            The goal is to implement classes in a manner that prevents unauthorized access to, or accidental modification of, the internal state of a class by its instances or external callers. The underlying algorithms of one class need not be known to another class—yet they can communicate seamlessly through clean public interfaces.
+          </p>
+        </div>
+
+        <p>
+          If an external entity could read or modify <code>s1.gfName</code> or call <code>s1.gfChatting()</code>, that would represent <strong>unauthorized access to private information</strong>. Encapsulation enforces this boundary at compile time.
+        </p>
+      </section>
+
+      <!-- Section 5: Access Modifiers -->
+      <section id="access-modifiers" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">05</span>
+          <h2>Access Modifiers in C++</h2>
+        </div>
+        <p>
+          Access modifiers specify how the members of a class can be accessed from other parts of the program:
+        </p>
+
+        <ol>
+          <li id="public-specifier"><strong>Public:</strong> Members declared as <code>public</code> are accessible from any part of the program. They can be accessed by instances of the class and external functions.</li>
+          <li id="private-specifier"><strong>Private:</strong> Members declared as <code>private</code> are accessible <em>only</em> within member functions of the same class. They cannot be accessed from outside the class or by derived classes.</li>
+          <li id="protected-specifier"><strong>Protected:</strong> Members declared as <code>protected</code> are accessible within the same class and by derived (child) classes only, but remain inaccessible to direct external callers.</li>
+        </ol>
+
+        <div class="table-wrapper">
+          <table class="spec-table">
+            <thead>
+              <tr>
+                <th>Access Specifier</th>
+                <th>Same Class</th>
+                <th>Derived (Child) Class</th>
+                <th>Outside / External Code</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>public</code></td>
+                <td>✅ Accessible</td>
+                <td>✅ Accessible</td>
+                <td>✅ Accessible</td>
+              </tr>
+              <tr>
+                <td><code>protected</code></td>
+                <td>✅ Accessible</td>
+                <td>✅ Accessible</td>
+                <td>❌ Blocked</td>
+              </tr>
+              <tr>
+                <td><code>private</code></td>
+                <td>✅ Accessible</td>
+                <td>❌ Blocked</td>
+                <td>❌ Blocked</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 6: Perfect Encapsulation -->
+      <section id="perfect-encapsulation" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">06</span>
+          <h2>Perfect Encapsulation</h2>
+        </div>
+        <p>
+          A class achieves <strong>Perfect Encapsulation</strong> when <strong>ALL data attributes are declared private (100% hidden)</strong>.
+        </p>
+
+        <div class="alert-box alert-important">
+          <strong>Crucial Clarification:</strong> Perfect encapsulation means that all <em>attributes</em> (data fields) are private. It does <strong>NOT</strong> mean that all members, including methods, must be private! If methods were also private, no external code could ever communicate with the object.
+        </div>
+
+        <section id="getters-setters" class="sub">
+          <h3>Handling Access via Getters &amp; Setters</h3>
+          <p>
+            Despite encapsulation, external code still needs to read and update data in a controlled manner. We provide public <strong>Getters</strong> (accessors) and <strong>Setters</strong> (mutators):
+          </p>
+
+          <ol>
+            <li><strong>Getters (Read Access):</strong> Public member functions that securely return attribute values without exposing internal references.</li>
+            <li><strong>Setters (Write Access):</strong> Public member functions that inspect, validate, and assign incoming data to private attributes.</li>
+          </ol>
+
+          <div class="diagram-box">
+            <pre class="diagram-pre">
+[ Caller in main() ]
+        │
+        ├── 1. s1.setName("Onkar")  ──► [ Setter: Validates &amp; Updates ] ──► [ private name: "Onkar" ]
+        │
+        └── 2. s1.getName()         ◄── [ Getter: Safely Returns ]     ◄── [ private name: "Onkar" ]</pre>
+          </div>
+        </section>
+      </section>
+
+      <!-- Section 7: Rules & Gotchas -->
+      <section id="rules-gotchas" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">07</span>
+          <h2>Key Implementation Rules &amp; Gotchas</h2>
+        </div>
+
+        <ol>
+          <li><strong>Default Access Specifier:</strong> In C++, if no access specifier is written in a <code>class</code>, all members are <code>private</code> by default. In a <code>struct</code>, members are <code>public</code> by default.</li>
+          <li><strong>Constructors &amp; Destructors Must Be Public:</strong> Constructors (<code>ctor</code>) and destructors (<code>dtor</code>) must always be declared in the <code>public:</code> block so that external callers can instantiate and destroy objects.</li>
+          <li><strong>The 4 Pillars vs. 1 Pillar:</strong> While curriculum models teach 4 distinct pillars (Encapsulation, Abstraction, Inheritance, Polymorphism), at a foundational architectural level, there is truly only <strong>1 master pillar: Abstraction</strong>. Encapsulation is state abstraction, polymorphism is behavioural abstraction, and inheritance is structural abstraction.</li>
+        </ol>
+      </section>
+
+      <!-- Section 8: Source Code Walkthrough -->
+      <section id="source-walkthrough" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">08</span>
+          <h2>Source Code Walkthrough</h2>
+        </div>
+
+        <h3>1. encapsulation.cpp</h3>
+        <p>From <code>coding/1. encapsulation.cpp</code>:</p>
+        <pre class="code"><span class="cm">#include &lt;bits/stdc++.h&gt;</span>
+<span class="kw">using namespace</span> <span class="ty">std</span>;
+
+<span class="kw">class</span> <span class="ty">Student</span>
+{
+<span class="kw">public</span>:
+    <span class="ty">int</span> id;
+    <span class="ty">string</span> name;
+
+<span class="kw">private</span>:
+    <span class="ty">int</span> age;
+    <span class="ty">string</span> gfName;
+
+<span class="kw">public</span>:
+    <span class="fn">Student</span>(<span class="ty">string</span> name, <span class="ty">int</span> age, <span class="ty">int</span> id, <span class="ty">string</span> gfName)
+    {
+        <span class="kw">this</span>-&gt;name = name;
+        <span class="kw">this</span>-&gt;age = age;
+        <span class="kw">this</span>-&gt;id = id;
+        <span class="kw">this</span>-&gt;gfName = gfName;
+    }
+
+    <span class="ty">void</span> <span class="fn">study</span>() { cout &lt;&lt; <span class="kw">this</span>-&gt;name &lt;&lt; <span class="str">" is Studying"</span> &lt;&lt; endl; }
+    <span class="ty">void</span> <span class="fn">sleep</span>() { cout &lt;&lt; <span class="kw">this</span>-&gt;name &lt;&lt; <span class="str">" is Sleeping"</span> &lt;&lt; endl; }
+    <span class="ty">void</span> <span class="fn">bunk</span>()  { cout &lt;&lt; <span class="kw">this</span>-&gt;name &lt;&lt; <span class="str">" is Bunking"</span> &lt;&lt; endl; }
+
+<span class="kw">private</span>:
+    <span class="ty">void</span> <span class="fn">gfChatting</span>()
+    {
+        cout &lt;&lt; <span class="kw">this</span>-&gt;name &lt;&lt; <span class="str">" is Chatting with his Girlfriend "</span> &lt;&lt; <span class="kw">this</span>-&gt;gfName &lt;&lt; endl;
+    }
+
+<span class="kw">public</span>:
+    ~<span class="fn">Student</span>() { cout &lt;&lt; <span class="kw">this</span>-&gt;name &lt;&lt; <span class="str">" - Default Destructor Called"</span> &lt;&lt; endl; }
+};
+
+<span class="ty">int</span> <span class="fn">main</span>()
+{
+    <span class="ty">Student</span> s1(<span class="str">"yash"</span>, <span class="num">25</span>, <span class="num">6</span>, <span class="str">"priya"</span>);
+    s1.<span class="fn">sleep</span>();
+    cout &lt;&lt; s1.id &lt;&lt; <span class="str">", "</span> &lt;&lt; s1.name &lt;&lt; endl;
+
+    <span class="cm">// s1.gfChatting(); // COMPILATION ERROR: gfChatting is private</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+
+        <h3>2. perfect-encapsulation.cpp</h3>
+        <p>From <code>coding/2. perfect-encapsulation.cpp</code>:</p>
+        <pre class="code"><span class="cm">#include &lt;bits/stdc++.h&gt;</span>
+<span class="kw">using namespace</span> <span class="ty">std</span>;
+
+<span class="kw">class</span> <span class="ty">Student</span>
+{
+    <span class="cm">// Private by default</span>
+    <span class="ty">int</span> id;
+    <span class="ty">int</span> age;
+    <span class="ty">string</span> name;
+    <span class="ty">string</span> gfName;
+
+<span class="kw">public</span>:
+    <span class="fn">Student</span>(<span class="ty">string</span> name, <span class="ty">int</span> age, <span class="ty">int</span> id, <span class="ty">string</span> gfName)
+    {
+        <span class="kw">this</span>-&gt;name = name;
+        <span class="kw">this</span>-&gt;age = age;
+        <span class="kw">this</span>-&gt;id = id;
+        <span class="kw">this</span>-&gt;gfName = gfName;
+    }
+
+    <span class="ty">int</span> <span class="fn">getId</span>() <span class="kw">const</span> { <span class="kw">return this</span>-&gt;id; }
+    <span class="ty">int</span> <span class="fn">getAge</span>() <span class="kw">const</span> { <span class="kw">return this</span>-&gt;age; }
+    <span class="ty">string</span> <span class="fn">getName</span>() <span class="kw">const</span> { <span class="kw">return this</span>-&gt;name; }
+    <span class="ty">string</span> <span class="fn">getGfName</span>() <span class="kw">const</span> { <span class="kw">return this</span>-&gt;gfName; }
+
+    <span class="ty">void</span> <span class="fn">setId</span>(<span class="ty">int</span> id) { <span class="kw">this</span>-&gt;id = id; }
+    <span class="ty">void</span> <span class="fn">setAge</span>(<span class="ty">int</span> age) { <span class="kw">this</span>-&gt;age = age; }
+    <span class="ty">void</span> <span class="fn">setName</span>(<span class="ty">string</span> name) { <span class="kw">this</span>-&gt;name = name; }
+    <span class="ty">void</span> <span class="fn">setGfName</span>(<span class="ty">string</span> gfName) { <span class="kw">this</span>-&gt;gfName = gfName; }
+
+    <span class="ty">void</span> <span class="fn">study</span>() { cout &lt;&lt; <span class="kw">this</span>-&gt;name &lt;&lt; <span class="str">" is Studying"</span> &lt;&lt; endl; }
+    ~<span class="fn">Student</span>() { cout &lt;&lt; <span class="kw">this</span>-&gt;name &lt;&lt; <span class="str">" - Default Destructor Called"</span> &lt;&lt; endl; }
+};
+
+<span class="ty">int</span> <span class="fn">main</span>()
+{
+    <span class="ty">Student</span> s1(<span class="str">"yash"</span>, <span class="num">25</span>, <span class="num">6</span>, <span class="str">"priya"</span>);
+
+    cout &lt;&lt; <span class="str">"Name: "</span> &lt;&lt; s1.<span class="fn">getName</span>() &lt;&lt; endl;
+    s1.<span class="fn">setName</span>(<span class="str">"Onkar"</span>);
+    cout &lt;&lt; <span class="str">"Updated Name: "</span> &lt;&lt; s1.<span class="fn">getName</span>() &lt;&lt; endl;
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+      </section>
+
+      <!-- Section 9: Summary -->
+      <section id="summary" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">09</span>
+          <h2>Summary</h2>
+        </div>
+        <p>
+          Encapsulation wraps state and behaviour within an object while enforcing security boundaries. Through private attributes and public getters and setters, C++ programs achieve high modularity, robust data protection, and loose coupling between interacting entities.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Floating Navigation Controls -->
+  <div class="floating-controls">
+    <button id="theme-toggle" class="ctrl-btn" aria-label="Toggle dark/light theme" title="Toggle Theme">☾</button>
+    <button id="width-toggle" class="ctrl-btn" aria-label="Toggle full width" title="Toggle Full Width">⊞</button>
+    <button id="back-to-top" class="ctrl-btn" aria-label="Scroll back to top" title="Back to top">↑</button>
+  </div>
+
+  <!-- Javascript -->
+  <script src="script.js"></script>
+</body>
+</html>

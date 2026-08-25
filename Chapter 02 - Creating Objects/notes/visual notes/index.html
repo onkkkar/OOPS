@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creating Objects - Chapter 02</title>
+<meta name="description" content="Visual chapter notes on constructors, destructors, copy constructors, and stack vs. dynamic allocation in C++.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="titleblock-wrap">
+  <div class="titleblock">
+    <div class="tb-main">
+      <span class="kicker">Course Notes · C++</span>
+      <h1>Creating&nbsp;Objects</h1>
+      <p>How a class blueprint turns into a living object - constructors, destructors, copy constructors, and the stack/heap split.</p>
+    </div>
+    <div class="tb-cells" style="grid-column:2/4; grid-template-columns:1fr 1fr;">
+      <div class="tb-cell"><span class="lbl">Sheet</span><span class="val">02</span></div>
+      <div class="tb-cell"><span class="lbl">Chapter</span><span class="val">Creating Objects</span></div>
+      <div class="tb-cell"><span class="lbl">Scale</span><span class="val">Object Construction</span></div>
+      <div class="tb-cell"><span class="lbl">Language</span><span class="val">C++17</span></div>
+      <div class="tb-cell"><span class="lbl">Read Time</span><span class="val" id="read-time">…</span></div>
+      <div class="tb-cell"><span class="lbl">Rev</span><span class="val">01</span></div>
+      <div class="tb-cell wide"><span class="lbl">Core Idea</span><span class="val">new = allocate + construct  ·  delete = destruct + free</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="toc" aria-label="Table of contents">
+    <span class="kicker">Contents</span>
+    <ol>
+      <li><a href="#where-we-left-off"><span class="num">01</span>Where We Left Off</a>
+        <ul class="sub">
+          <li><a href="#roadmap">Roadmap</a></li>
+        </ul>
+      </li>
+      <li><a href="#the-class"><span class="num">02</span>The Class: Writing the Blueprint</a></li>
+      <li><a href="#constructors"><span class="num">03</span>Constructors</a>
+        <ul class="sub">
+          <li><a href="#default-constructor">Default Constructor</a></li>
+          <li><a href="#what-ctor-does">What a Constructor Does</a></li>
+        </ul>
+      </li>
+      <li><a href="#destructors"><span class="num">04</span>Destructors</a>
+        <ul class="sub">
+          <li><a href="#what-dtor-does">What a Destructor Does</a></li>
+          <li><a href="#destruction-order">Destruction Order (LIFO)</a></li>
+        </ul>
+      </li>
+      <li><a href="#parameterised-constructors"><span class="num">05</span>Parameterised Constructors</a>
+        <ul class="sub">
+          <li><a href="#this-keyword">The <code>this</code> Keyword</a></li>
+        </ul>
+      </li>
+      <li><a href="#copy-constructors"><span class="num">06</span>Copy Constructors</a></li>
+      <li><a href="#stack-vs-heap"><span class="num">07</span>Stack vs. Dynamic Allocation</a>
+        <ul class="sub">
+          <li><a href="#accessing-members">Accessing Members: <code>.</code> vs <code>-&gt;</code></a></li>
+          <li><a href="#manual-cleanup">Manual Cleanup</a></li>
+        </ul>
+      </li>
+      <li><a href="#dynamic-attributes"><span class="num">08</span>Cleaning Up Dynamic Attributes</a>
+        <ul class="sub">
+          <li><a href="#deep-copy">Deep Copy</a></li>
+        </ul>
+      </li>
+      <li><a href="#object-life-cycle"><span class="num">09</span>Object Life Cycle</a></li>
+      <li><a href="#summary"><span class="num">10</span>Summary</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="where-we-left-off">
+      <div class="sec-head"><span class="idx">01</span><h2>Where We Left Off</h2></div>
+      <div class="prose">
+        <p>Chapter 01 established the vocabulary: a <strong>class</strong> is a blueprint - a container that bundles data (attributes) and behaviour (methods) into one unit - and an <strong>object</strong> is that blueprint filled in with real values.</p>
+      </div>
+      <div class="callout">Object = An Instance of a Class</div>
+      <div class="prose">
+        <p>This chapter is about the mechanics of actually <em>creating</em> those objects in C++: what runs automatically the moment an object is born and the moment it dies, and the different ways an object's initial data can reach it.</p>
+        <div class="ref"><span class="p">source →</span> coding/1. class-blueprint.cpp · 2. parameterised-constructor.cpp · 3. copy-constructor.cpp · 4. dynamic-allocation.cpp</div>
+        <aside class="marginnote"><span class="mn-term">Why 4 files?</span>Each file adds exactly one new idea on top of the last, so at every stage the code on screen only contains what's needed to demonstrate that idea - nothing from later concepts leaks in early.</aside>
+      </div>
+
+      <h3 id="roadmap">Roadmap: What Creating an Object Involves</h3>
+      <div class="prose">
+        <p>Everything in this chapter happens in a fixed sequence of ideas, each building on the last:</p>
+        <ol>
+          <li><strong>Define the blueprint</strong> - write the <code>class</code> itself (attributes + behaviours).</li>
+          <li><strong>Instantiate it</strong> - create an <strong>object</strong>: an instance of that class.</li>
+          <li><strong>Constructor</strong> - the special function that runs automatically the moment an object is created.</li>
+          <li><strong>Parameterised Constructor</strong> - a better way to hand the constructor its initial values in one call.</li>
+          <li><strong>Copy Constructor</strong> - build a new object by copying an existing one.</li>
+          <li><strong>Destructor</strong> - the special function that runs automatically the moment an object is destroyed.</li>
+          <li><strong>Stack vs. Dynamic (Heap) Allocation</strong> - and why a heap-allocated attribute needs extra care in both the destructor and the copy constructor.</li>
+          <li><strong>Object Life Cycle</strong> - the full sequence, start to finish, tying every stage above together.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="the-class">
+      <div class="sec-head"><span class="idx">02</span><h2>The Class: Writing the Blueprint</h2></div>
+      <div class="prose">
+        <p>A class is a container that tells C++ what an object of that kind will look like - what data it carries and what it can do. It has no values yet; it's a template, not a thing - <code>Student</code>, <code>Person</code>, <code>Car</code>, whatever real-world entity we're modelling.</p>
+      </div>
+      <div class="codecap"><span>class definition</span><span>blueprint, no values yet</span></div>
+      <pre class="code"><code><span class="kw">class</span> Student
+{
+<span class="kw">public</span>:
+    <span class="cm">// Attribute / Property / Data / State</span>
+    <span class="ty">int</span> id;
+    <span class="ty">int</span> age;
+    <span class="ty">string</span> name;
+
+    <span class="cm">// Behaviour / Method / Function</span>
+    <span class="kw">void</span> <span class="fn">study</span>() { <span class="cm">/* ... */</span> }
+};</code></pre>
+      <div class="prose">
+        <ul>
+          <li><strong>Attributes / Properties / Data / State</strong> - the variables that belong to the class (<code>id</code>, <code>age</code>, <code>name</code>).</li>
+          <li><strong>Behaviours / Methods / Functions</strong> - the functions that belong to the class (<code>study()</code>).</li>
+          <li><strong><code>public:</code></strong> - marks these members as reachable from outside the class (e.g. from <code>main()</code>). Chapter 03 (Encapsulation) covers what happens when members are hidden instead - for now, <code>public</code> is what lets code like <code>s1.name = "yash";</code> compile.</li>
+        </ul>
+      </div>
+
+      <figure class="figure">
+        <div class="figure-inner">
+          <span class="tick tl"></span><span class="tick br"></span>
+          <div class="blueprint-card" style="margin:0 auto;">
+            <div class="bp-head">Class: Student</div>
+            <div class="bp-body">
+              <div class="bp-section">
+                <span class="bp-label">Data / State</span>
+                <ul><li>id: int</li><li>age: int</li><li>name: string</li></ul>
+              </div>
+              <div class="bp-section">
+                <span class="bp-label">Behaviours</span>
+                <ul><li>study()</li></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption><span class="fig-no">FIG. 01</span> - a class with no values yet: a blueprint, not an object</figcaption>
+      </figure>
+    </section>
+
+    <section id="constructors">
+      <div class="sec-head"><span class="idx">03</span><h2>Constructors</h2></div>
+      <div class="prose">
+        <p>A <strong>constructor (ctor)</strong> is a special function that runs <strong>automatically the instant an object is created</strong>. It's how the Class blueprint actually turns into a usable Object.</p>
+        <ul>
+          <li>Its name is always <strong>identical to the class name</strong> - <code>Student()</code> for class <code>Student</code>.</li>
+          <li>It never has a return type, not even <code>void</code>.</li>
+        </ul>
+      </div>
+
+      <section class="sub" id="default-constructor">
+        <h3><span class="tag">3.1</span>The Default Constructor</h3>
+        <div class="prose">
+          <p>If we write a class and never declare <em>any</em> constructor ourselves, C++ silently inserts an empty one for us - the <strong>default constructor</strong>. Writing it out explicitly just lets us see, in the output, exactly when it fires.</p>
+        </div>
+        <div class="codecap"><span>1. class-blueprint.cpp</span><span>default ctor</span></div>
+        <pre class="code"><code>Student()
+{
+    cout &lt;&lt; <span class="str">"Default Constructor Called"</span> &lt;&lt; endl;
+}</code></pre>
+      </section>
+
+      <section class="sub" id="what-ctor-does">
+        <h3><span class="tag">3.2</span>What a Constructor Actually Does</h3>
+        <div class="prose">
+          <p>Say we need <code>s1</code>, <code>s2</code>, <code>s3</code>, … - many Student objects, each with its own <code>id</code>, <code>age</code>, and <code>name</code>. The constructor is what makes that possible: it runs <strong>once per object</strong>, independently, so every object gets its own set of attributes rather than sharing one.</p>
+        </div>
+        <pre class="code"><code>Student s1;   <span class="cm">// Constructor runs -&gt; prints "Default Constructor Called"</span>
+s1.name = <span class="str">"yash"</span>;
+s1.age = <span class="str">25</span>;
+s1.id = <span class="str">6</span>;
+
+Student s2;   <span class="cm">// Constructor runs AGAIN, completely independently of s1</span>
+s2.name = <span class="str">"john"</span>;
+s2.age = <span class="str">20</span>;
+s2.id = <span class="str">7</span>;</code></pre>
+        <div class="out">Default Constructor Called      <- from `Student s1;`
+yash is Sleeping
+Default Constructor Called      <- from `Student s2;`
+john is Bunking</div>
+        <div class="prose"><p>Every <code>Student</code> declaration triggers exactly one constructor call. That's the rule to hold onto: <strong>number of objects created === number of times the constructor runs.</strong></p></div>
+      </section>
+    </section>
+
+    <section id="destructors">
+      <div class="sec-head"><span class="idx">04</span><h2>Destructors</h2></div>
+      <div class="prose">
+        <p>A <strong>destructor (dtor)</strong> is the mirror image of a constructor: a special function that runs <strong>automatically the instant an object is destroyed</strong> - for a stack object, that means the moment it goes out of scope (e.g. when <code>main()</code> reaches its closing brace).</p>
+        <ul>
+          <li>Same naming rule as constructors: identical to the class name.</li>
+          <li>Prefixed with a tilde, <code>~</code> - so for <code>Student</code>, it's <code>~Student()</code>.</li>
+          <li>Just like the constructor, if we don't write one, the compiler silently inserts a default (empty) one.</li>
+        </ul>
+      </div>
+      <pre class="code"><code>~Student()
+{
+    cout &lt;&lt; <span class="kw">this</span>-&gt;name &lt;&lt; <span class="str">" - Default Destructor Called"</span> &lt;&lt; endl;
+}</code></pre>
+
+      <section class="sub" id="what-dtor-does">
+        <h3><span class="tag">4.1</span>What a Destructor Actually Does</h3>
+        <div class="prose"><p>When the program reaches <code>return 0;</code> in <code>main()</code>, every stack object created inside it is torn down, and each one's destructor fires as that happens. This is where any cleanup work for that object belongs.</p></div>
+      </section>
+
+      <section class="sub" id="destruction-order">
+        <h3><span class="tag">4.2</span>Destruction Order Is the Reverse of Creation Order</h3>
+        <div class="prose">
+          <p>This is easy to get backwards, so it's worth stating precisely: stack objects are destroyed in the <strong>reverse</strong> of the order they were created - last created, first destroyed (LIFO).</p>
+        </div>
+        <aside class="marginnote"><span class="mn-term">LIFO</span>Last-In, First-Out. The most recently created stack object is the first one torn down.</aside>
+        <pre class="code"><code>Student s1;   <span class="cm">// created 1st</span>
+Student s2;   <span class="cm">// created 2nd</span>
+<span class="cm">// ... end of main() ...</span></code></pre>
+        <div class="out">Default Constructor Called   <- s1 created (1st)
+Default Constructor Called   <- s2 created (2nd)
+...
+john - Default Destructor Called   <- s2 destroyed FIRST
+yash - Default Destructor Called   <- s1 destroyed SECOND</div>
+
+        <figure class="figure">
+          <div class="figure-inner">
+            <span class="tick tl"></span><span class="tick br"></span>
+            <div class="compare-grid">
+              <div>
+                <div class="compare-cap">Creation Order</div>
+                <div class="bounded-pair">
+                  <div class="bounded-box"><h6>1st</h6><p>Student s1;</p></div>
+                  <div class="bounded-box"><h6>2nd</h6><p>Student s2;</p></div>
+                </div>
+              </div>
+              <div>
+                <div class="compare-cap">Destruction Order (LIFO)</div>
+                <div class="bounded-pair">
+                  <div class="bounded-box teacher"><h6>1st</h6><p>~Student() for s2</p></div>
+                  <div class="bounded-box teacher"><h6>2nd</h6><p>~Student() for s1</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <figcaption><span class="fig-no">FIG. 02</span> - last created, first destroyed: destruction mirrors creation</figcaption>
+        </figure>
+
+        <div class="prose"><p>📄 Run <code>1. class-blueprint.cpp</code> yourself and watch the destructor lines print in reverse of the constructor lines.</p></div>
+      </section>
+    </section>
+
+    <section id="parameterised-constructors">
+      <div class="sec-head"><span class="idx">05</span><h2>Parameterised Constructors</h2></div>
+      <div class="prose">
+        <p>Building <code>s1</code> in the examples above took four separate statements: one to create it, three more to assign its attributes one at a time. That's fragile - it's easy to forget an attribute and end up with a half-initialized object. A <strong>parameterised constructor</strong> fixes this by accepting all the values an object needs <em>as arguments to the constructor call itself</em>.</p>
+      </div>
+      <div class="codecap"><span>2. parameterised-constructor.cpp</span><span>parameterised ctor</span></div>
+      <pre class="code"><code>Student(<span class="ty">string</span> name, <span class="ty">int</span> age, <span class="ty">int</span> id, <span class="ty">float</span> gpa)
+{
+    <span class="kw">this</span>-&gt;name = name;
+    <span class="kw">this</span>-&gt;age = age;
+    <span class="kw">this</span>-&gt;id = id;
+    <span class="kw">this</span>-&gt;gpa = gpa;
+
+    cout &lt;&lt; <span class="kw">this</span>-&gt;name &lt;&lt; <span class="str">" - Parameterised Constructor Called"</span> &lt;&lt; endl;
+}</code></pre>
+      <pre class="code"><code><span class="cm">// Old way - object exists momentarily with no valid data, then gets filled in by hand</span>
+Student s1;
+s1.name = <span class="str">"yash"</span>;
+s1.age = <span class="str">25</span>;
+s1.id = <span class="str">6</span>;
+
+<span class="cm">// Better way - object is born already fully formed</span>
+Student s2(<span class="str">"aman"</span>, <span class="str">21</span>, <span class="str">7</span>, <span class="str">8.4f</span>);</code></pre>
+      <div class="prose"><p>Both constructors can coexist on the same class - C++ picks whichever one matches how you called it (an empty <code>Student s1;</code> calls the default one, a <code>Student s2(...)</code> with arguments calls the parameterised one).</p></div>
+
+      <section class="sub" id="this-keyword">
+        <h3><span class="tag">5.1</span>The <code>this</code> Keyword</h3>
+        <div class="callout">IMPORTANT: <code>this</code> refers to the exact object a method is currently running on.</div>
+        <div class="prose">
+          <p>Inside the parameterised constructor above, the parameter is named <code>name</code> and the attribute is also named <code>name</code> - deliberately, since they represent the same idea. <code>this-&gt;name</code> disambiguates them: it means "the <code>name</code> attribute that belongs to the object under construction," as opposed to the plain <code>name</code>, which refers to the parameter.</p>
+        </div>
+
+        <figure class="figure">
+          <div class="figure-inner">
+            <span class="tick tl"></span><span class="tick br"></span>
+            <div class="fan-wrap">
+              <div class="node root">Student s2("aman", 21, 7, 8.4f);  -&gt;  inside the ctor, `this` == s2</div>
+              <div class="stem"></div>
+              <div class="fan-row">
+                <div class="fan-item"><div class="node">this-&gt;name<br><span style="opacity:.65">s2's own attribute, now set to "aman"</span></div></div>
+                <div class="fan-item"><div class="node">name<br><span style="opacity:.65">the incoming parameter, "aman"</span></div></div>
+              </div>
+            </div>
+          </div>
+          <figcaption><span class="fig-no">FIG. 03</span> - `this->name` (attribute) vs. `name` (parameter), disambiguated</figcaption>
+        </figure>
+
+        <div class="prose"><p><code>this</code> isn't unique to constructors - it works the same way inside any method of a class, always pointing back to the object the method was called on (<code>s1.study()</code> -&gt; inside <code>study()</code>, <code>this</code> is <code>s1</code>).</p></div>
+      </section>
+    </section>
+
+    <section id="copy-constructors">
+      <div class="sec-head"><span class="idx">06</span><h2>Copy Constructors</h2></div>
+      <div class="prose">
+        <p>Suppose we want a new Student, <code>s4</code>, that starts out with exactly the same data as an existing one, <code>s3</code>. Instead of retyping every value, we can copy it directly from <code>s3</code> using a <strong>copy constructor</strong> - a constructor that builds a new object out of an already-existing object of the same class.</p>
+      </div>
+      <div class="codecap"><span>3. copy-constructor.cpp</span><span>copy ctor</span></div>
+      <pre class="code"><code>Student(<span class="kw">const</span> Student &amp;source)
+{
+    <span class="kw">this</span>-&gt;name = source.name;
+    <span class="kw">this</span>-&gt;age = source.age;
+    <span class="kw">this</span>-&gt;id = source.id;
+    <span class="kw">this</span>-&gt;gpa = source.gpa;
+
+    cout &lt;&lt; <span class="kw">this</span>-&gt;name &lt;&lt; <span class="str">" - Copy Constructor Called"</span> &lt;&lt; endl;
+}</code></pre>
+      <div class="prose">
+        <ul>
+          <li><code>this</code> refers to the <strong>new</strong> object being created (<code>s4</code> or <code>s5</code> below).</li>
+          <li><code>source</code> refers to the <strong>existing</strong> object being copied from (<code>s3</code>).</li>
+          <li><code>source</code> is a <strong>reference</strong> (<code>&amp;</code>) - without it, C++ would need to copy <code>source</code> into the parameter first, which means calling the copy constructor again just to <em>enter</em> the copy constructor: infinite recursion. Passing by reference hands over the original object directly.</li>
+          <li><code>source</code> is <strong><code>const</code></strong> - this constructor only ever reads from the object it's copying; it has no business modifying it.</li>
+        </ul>
+        <p>There are two equivalent ways to invoke it:</p>
+      </div>
+      <pre class="code"><code>Student s4(s3);   <span class="cm">// direct-initialization form</span>
+Student s5 = s3;  <span class="cm">// copy-initialization form - looks like assignment, isn't</span></code></pre>
+      <div class="out">yash - Parameterised Constructor Called
+yash - Copy Constructor Called
+yash - Copy Constructor Called
+yash, yash-copy, yash</div>
+      <div class="prose"><p>Both lines call the copy constructor and pass <code>s3</code> as <code>source</code>; <code>s5 = s3</code> is not an assignment here because <code>s5</code> doesn't exist yet - it's being defined.</p></div>
+
+      <figure class="figure">
+        <div class="figure-inner">
+          <span class="tick tl"></span><span class="tick br"></span>
+          <div class="class-fan">
+            <div class="blueprint-card">
+              <div class="bp-head">Existing: s3</div>
+              <div class="bp-body">
+                <div class="bp-section">
+                  <span class="bp-label">Data</span>
+                  <ul><li>name = "yash"</li><li>age = 25</li><li>id = 6</li></ul>
+                </div>
+              </div>
+            </div>
+            <div class="instance-stems"><div class="stem"></div></div>
+            <div class="instance-row">
+              <div class="instance-card">
+                <div class="ic-head">New: s4</div>
+                <div class="ic-body"><div>name = "yash"</div><div>age = 25</div><div>id = 6</div></div>
+              </div>
+              <div class="instance-card">
+                <div class="ic-head">New: s5</div>
+                <div class="ic-body"><div>name = "yash"</div><div>age = 25</div><div>id = 6</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption><span class="fig-no">FIG. 04</span> - field-by-field copy: s4 and s5 are independent objects, not aliases of s3</figcaption>
+      </figure>
+    </section>
+
+    <section id="stack-vs-heap">
+      <div class="sec-head"><span class="idx">07</span><h2>Stack vs. Dynamic (Heap) Allocation</h2></div>
+      <div class="prose">
+        <p>Every object we've made so far -</p>
+      </div>
+      <pre class="code"><code>Student s3(<span class="str">"yash"</span>, <span class="str">25</span>, <span class="str">6</span>, <span class="str">9.0f</span>);</code></pre>
+      <div class="prose">
+        <p>- is allocated <strong>on the stack</strong>. Its lifetime is automatic: it's created where it's declared, and destroyed automatically when that scope ends.</p>
+        <p>There's a second way: <strong>dynamic (heap) allocation</strong>, using <code>new</code>. Instead of handing back the object itself, <code>new</code> hands back a <strong>pointer</strong> to an object living on the heap:</p>
+      </div>
+      <div class="codecap"><span>4. dynamic-allocation.cpp</span><span>heap allocation</span></div>
+      <pre class="code"><code>Student *s6 = <span class="kw">new</span> Student(<span class="str">"kunal"</span>, <span class="str">22</span>, <span class="str">8</span>, <span class="str">7.5f</span>);</code></pre>
+      <div class="prose"><p>The parameterised constructor runs exactly as normal - <code>new</code> just changes <em>where</em> the object lives and <em>how</em> we refer to it (through a pointer, <code>s6</code>, rather than a plain variable).</p></div>
+
+      <section class="sub" id="accessing-members">
+        <h3><span class="tag">7.1</span>Accessing Members: <code>.</code> vs <code>-&gt;</code></h3>
+        <div class="table-scroll">
+          <table class="access-table">
+            <thead><tr><th>Object kind</th><th>Declared as</th><th>Access attributes/methods with</th></tr></thead>
+            <tbody>
+              <tr><td>Stack object</td><td><code>Student s3(...)</code></td><td><code>s3.name</code>, <code>s3.study()</code></td></tr>
+              <tr><td>Heap object (via pointer)</td><td><code>Student *s6 = new Student(...)</code></td><td><code>s6-&gt;name</code>, <code>s6-&gt;study()</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="prose"><p><code>-&gt;</code> is shorthand for "dereference the pointer, then access the member" - <code>s6-&gt;name</code> means the same thing as <code>(*s6).name</code>.</p></div>
+      </section>
+
+      <section class="sub" id="manual-cleanup">
+        <h3><span class="tag">7.2</span>Manual Cleanup: You Must <code>delete</code> What You <code>new</code></h3>
+        <div class="prose">
+          <p>A stack object is destroyed for us automatically. A heap object is not - there's no "end of scope" moment for something <code>new</code> created, so its destructor never runs on its own. We have to trigger it ourselves:</p>
+        </div>
+        <pre class="code"><code><span class="kw">delete</span> s6;</code></pre>
+        <div class="prose"><p><code>delete</code> is what actually calls <code>s6</code>'s destructor and frees the memory <code>new</code> allocated. Forget this line, and the object is <strong>leaked</strong>: its memory stays reserved for the rest of the program's life, and its destructor never runs at all.</p></div>
+      </section>
+    </section>
+
+    <section id="dynamic-attributes">
+      <div class="sec-head"><span class="idx">08</span><h2>Cleaning Up Dynamic Attributes</h2></div>
+      <div class="prose">
+        <p>So far every attribute (<code>int</code>, <code>string</code>, <code>float</code>) has been a plain value that C++ knows how to destroy on its own. But what if an <em>attribute itself</em> is a pointer to memory the object allocated dynamically?</p>
+      </div>
+      <pre class="code"><code><span class="kw">class</span> Student
+{
+<span class="kw">public</span>:
+    <span class="ty">float</span> *gpa; <span class="cm">// the object OWNS this heap memory</span>
+    <span class="cm">// ...</span>
+
+    Student(<span class="ty">string</span> name, <span class="ty">int</span> age, <span class="ty">int</span> id, <span class="ty">float</span> gpa)
+    {
+        <span class="cm">// ...</span>
+        <span class="kw">this</span>-&gt;gpa = <span class="kw">new</span> <span class="ty">float</span>(gpa); <span class="cm">// dynamic memory allocation for this attribute</span>
+    }
+};</code></pre>
+      <div class="prose">
+        <p>Here, <code>new float(gpa)</code> allocates a single <code>float</code> on the heap and stores its address in the <code>gpa</code> pointer. The object's other attributes (<code>id</code>, <code>age</code>, <code>name</code>) are destroyed automatically when the object is destroyed - but the <code>float</code> that <code>gpa</code> points to is <strong>not</strong>. The default destructor only knows how to clean up the pointer variable itself (a few bytes holding an address); it has no idea it's also responsible for the memory that address points to.</p>
+        <p>So we have to say so explicitly, in our own destructor:</p>
+      </div>
+      <pre class="code"><code>~Student()
+{
+    cout &lt;&lt; <span class="kw">this</span>-&gt;name &lt;&lt; <span class="str">" - Default Destructor Called"</span> &lt;&lt; endl;
+    <span class="kw">delete</span> <span class="kw">this</span>-&gt;gpa; <span class="cm">// without this, the float leaks</span>
+}</code></pre>
+      <div class="callout">This is exactly why we get in the habit of always writing a destructor once a class owns any dynamic memory: it's the one guaranteed place to release what the constructor allocated.</div>
+
+      <section class="sub" id="deep-copy">
+        <h3><span class="tag">8.1</span>Deep Copy: Why the Copy Constructor Also Needs to Care</h3>
+        <div class="prose">
+          <p>The moment a class holds a pointer like <code>gpa</code>, the copy constructor from earlier is no longer safe as written. If it just copied the pointer's <em>address</em>:</p>
+        </div>
+        <pre class="code"><code><span class="kw">this</span>-&gt;gpa = source.gpa; <span class="cm">// WRONG once gpa is a pointer - copies the address, not the value</span></code></pre>
+        <div class="prose"><p>then the new object and <code>source</code> would both point at the <strong>same</strong> heap <code>float</code>. Two objects, one shared piece of memory - and both of their destructors will eventually call <code>delete</code> on it.</p></div>
+
+        <figure class="figure">
+          <div class="figure-inner">
+            <span class="tick tl"></span><span class="tick br"></span>
+            <div class="ptr-diagram">
+              <div class="ptr-scenario">
+                <div class="ptr-scenario-label warn">Shallow Copy - Shared Address, Shared Ownership</div>
+                <div class="ptr-row">
+                  <div class="ptr-col">
+                    <div class="ptr-box">s3.gpa</div>
+                    <div class="ptr-box">s4.gpa</div>
+                  </div>
+                  <div class="ptr-arrow warn">──▶</div>
+                  <div class="heap-box warn">float on heap<br><span style="font-weight:400;font-size:11px;">deleted TWICE - undefined behaviour</span></div>
+                </div>
+              </div>
+              <div class="ptr-scenario">
+                <div class="ptr-scenario-label ok">Deep Copy - Independent Addresses, Independent Ownership</div>
+                <div class="ptr-row">
+                  <div class="ptr-box">s3.gpa</div>
+                  <div class="ptr-arrow">──▶</div>
+                  <div class="heap-box">float #1</div>
+                </div>
+                <div class="ptr-row">
+                  <div class="ptr-box">s4.gpa</div>
+                  <div class="ptr-arrow">──▶</div>
+                  <div class="heap-box">float #2</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <figcaption><span class="fig-no">FIG. 05</span> - shallow copy shares one float and double-frees it; deep copy gives each object its own</figcaption>
+        </figure>
+
+        <div class="prose"><p>The fix is a <strong>deep copy</strong>: allocate a brand-new <code>float</code> for the new object, and copy the <em>value</em> <code>source.gpa</code> points to, not the pointer itself:</p></div>
+        <pre class="code"><code>Student(<span class="kw">const</span> Student &amp;source)
+{
+    <span class="cm">// ...</span>
+    <span class="kw">this</span>-&gt;gpa = <span class="kw">new</span> <span class="ty">float</span>(*source.gpa); <span class="cm">// new heap float, value copied from source</span>
+}</code></pre>
+        <div class="prose"><p>Now each object owns its own <code>float</code>, and each destructor can safely <code>delete</code> its own copy without touching the other's.</p></div>
+        <div class="ref"><span class="p">source →</span> coding/4. dynamic-allocation.cpp - full working version, including the corrected copy constructor</div>
+      </section>
+    </section>
+
+    <section id="object-life-cycle">
+      <div class="sec-head"><span class="idx">09</span><h2>Object Life Cycle</h2></div>
+      <div class="prose"><p>Pulling every section above together, every object goes through the same sequence of stages:</p></div>
+
+      <figure class="figure">
+        <div class="figure-inner">
+          <span class="tick tl"></span><span class="tick br"></span>
+          <div class="lifecycle">
+            <div class="lc-step"><span class="lc-n">1</span><p><strong>Object declared</strong> - <code>Student s1;</code> or <code>Student *s6 = new Student(...);</code></p></div>
+            <div class="lc-stem"></div>
+            <div class="lc-step"><span class="lc-n">2</span><p><strong>Constructor runs</strong> - attributes are set, by hand or via parameters</p></div>
+            <div class="lc-stem"></div>
+            <div class="lc-step"><span class="lc-n">3</span><p><strong>Object is used</strong> - attributes accessed, methods called</p></div>
+            <div class="lc-stem"></div>
+            <div class="lc-step"><span class="lc-n">4</span><p><strong>Destructor runs</strong> - stack: automatic, at end of scope, reverse order. Heap: only when <code>delete</code> is called explicitly</p></div>
+            <div class="lc-stem"></div>
+            <div class="lc-step"><span class="lc-n">5</span><p><strong>Memory reclaimed</strong> - including any dynamically allocated attributes, IF the destructor explicitly deletes them</p></div>
+          </div>
+        </div>
+        <figcaption><span class="fig-no">FIG. 06</span> - the five stages every object passes through, stack or heap</figcaption>
+      </figure>
+    </section>
+
+    <section id="summary">
+      <div class="sec-head"><span class="idx">10</span><h2>Summary</h2></div>
+      <div class="summary-grid">
+        <div class="summary-card"><div class="n">01</div><p><strong>Constructor</strong> - runs automatically once per object, at creation; same name as the class; a default one is auto-generated if we write none.</p></div>
+        <div class="summary-card"><div class="n">02</div><p><strong>Destructor</strong> - runs automatically once per object, at destruction; same name prefixed with <code>~</code>; also auto-generated if omitted. Stack objects are destroyed in <strong>reverse</strong> of creation order.</p></div>
+        <div class="summary-card"><div class="n">03</div><p><strong>Parameterised Constructor</strong> - builds an object fully-formed in one call, using <code>this</code> to distinguish parameters from attributes of the same name.</p></div>
+        <div class="summary-card"><div class="n">04</div><p><strong>Copy Constructor</strong> - <code>ClassName(const ClassName &amp;source)</code> - builds a new object from an existing one, field by field.</p></div>
+        <div class="summary-card"><div class="n">05</div><p><strong>Stack vs. Heap</strong> - stack objects clean up automatically; heap objects (<code>new</code>) must be manually <code>delete</code>d, or they leak.</p></div>
+        <div class="summary-card"><div class="n">06</div><p><strong>Dynamic Attributes Need Manual Cleanup, Twice Over</strong> - <code>delete</code> in the destructor, and a <strong>deep copy</strong> in the copy constructor - otherwise two objects double-free the same memory.</p></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="sheet">
+  <span>Chapter 02 - Creating Objects</span>
+  <span>new = allocate + construct  ·  delete = destruct + free</span>
+</footer>
+
+<div class="controls">
+  <button id="width-toggle" class="ctrl-btn" type="button" aria-label="Toggle full width" title="Expand width">⊞</button>
+  <button id="theme-toggle" class="ctrl-btn" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">☾</button>
+  <button id="back-to-top" class="ctrl-btn ctrl-btn--totop" type="button" aria-label="Back to top" title="Back to top">↑</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

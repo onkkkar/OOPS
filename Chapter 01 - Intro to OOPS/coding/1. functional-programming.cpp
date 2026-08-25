@@ -1,10 +1,21 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-// Global Data
+// =========================================================================
+// Functional Programming Paradigm (Before OOP)
+// =========================================================================
+// Demonstrates how procedural/functional programming organizes data and
+// functions separately, and the scaling/security bottlenecks that arise.
+// =========================================================================
+
+// ---------------- Global Data (Shared State) ----------------
+// Problem: Global data has no privacy or access restrictions;
+// any function across the codebase can read and mutate it.
 string schoolName = "DPS";
 
-// Functions for Student Behaviours
+// ---------------- Student Behaviour Functions ----------------
+// Functions must take every piece of student data as separate parameters.
+
 void study(int id, int age, string name)
 {
     cout << name << " (id: " << id << ", age: " << age << ") is Studying at " << schoolName << endl;
@@ -20,7 +31,8 @@ void sleep(int id, int age, string name)
     cout << name << " is Sleeping" << endl;
 }
 
-// ---- scaling to just 3 students ----
+// ---------------- Scaling Attempt 1: Duplicate Variables ----------------
+// Problem: Variables multiply exponentially; mixing up arguments is silently valid.
 void duplicateVariables()
 {
     int id1 = 1, id2 = 2, id3 = 3;
@@ -31,32 +43,41 @@ void duplicateVariables()
     study(id2, age2, name2);
     study(id3, age3, name3);
 
-    // compiles fine, but silently wrong — mixed up students
+    // Compiles fine, but silently wrong — data mismatch bug
     study(id1, age2, name3);
 }
 
-// --- scaling to just 3 students, but with parallel arrays ---
+// ---------------- Scaling Attempt 2: Parallel Arrays ----------------
+// Problem: Arrays are uncoordinated; no single entity bounds id[i] to name[i].
 void parallelArrays()
 {
     int ids[3] = {1, 2, 3};
     int ages[3] = {20, 21, 19};
     string names[3] = {"Rahul", "Aman", "Simran"};
 
-    for (int i = 0; i < 3; i++){
+    for (int i = 0; i < 3; i++)
+    {
         study(ids[i], ages[i], names[i]);
     }
 }
 
-// --- unrelated to students, but can still read AND overwrite schoolName — global data has no privacy ---
+// ---------------- Global State Pollution ----------------
+// An unrelated function can silently corrupt global state without ownership.
 void teach()
 {
     cout << "Teaching a class at " << schoolName << endl;
     schoolName = "Hacked High";
 }
 
+// =========================================================================
+// Main Execution Function
+// =========================================================================
 int main()
 {
-    // Just 1 Student
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    // ---------------- 1. Single Student Representation ----------------
     int id = 1;
     int age = 20;
     string name = "Rahul";
@@ -65,15 +86,16 @@ int main()
     eat(id, age, name);
     sleep(id, age, name);
 
-    // Scaling to just 3 Students
+    // ---------------- 2. Scaling to Multiple Students ----------------
     duplicateVariables();
 
-    // Scaling to just 3 Students, but with parallel arrays
+    // ---------------- 3. Parallel Arrays Approach ----------------
     parallelArrays();
 
+    // ---------------- 4. Uncontrolled State Mutation ----------------
     teach();
 
-    // schoolName was silently changed by a function that doesn't own it
+    // Global data was silently mutated by an external function
     cout << "School is now: " << schoolName << endl;
 
     return 0;

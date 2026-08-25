@@ -12,9 +12,10 @@ OOPS/
 │   └── rules/
 │       └── workspace-rules.md     # Primary memory rules (this file)
 ├── Chapter NN - <Topic>/
-│   ├── Notes.md                   # Chapter teaching notes telling one continuous narrative
 │   ├── coding/                    # Runnable, clean, compiling .cpp source files
-│   └── visual-notes/              # Interactive, beautifully styled web notes (HTML/CSS/JS)
+│   └── notes/
+│       ├── Notes.md                # Chapter teaching notes telling one continuous narrative
+│       └── visual notes/           # Interactive, beautifully styled web notes (HTML/CSS/JS)
 ```
 
 ---
@@ -61,7 +62,7 @@ OOPS/
 
 ---
 
-## 4. Visual Web Notes (`visual-notes/`)
+## 4. Visual Web Notes (`notes/visual notes/`)
 
 When generating or updating the visual HTML notes for any chapter, adhere to the **Swiss Technical / Curated Harmonic Design System** implemented in Chapter 01.
 
@@ -114,9 +115,9 @@ All colors must be defined as CSS variables and adapted across Light and Dark th
 
 Before finalizing any changes in any chapter:
 1. Run `g++ -std=c++17 -fsyntax-only` on all `.cpp` files in `coding/` to guarantee zero compiler errors.
-2. Confirm that all embedded code snippets in `Notes.md` and `visual-notes/index.html` match the `.cpp` files verbatim.
+2. Confirm that all embedded code snippets in `Notes.md` and `visual notes/index.html` match the `.cpp` files verbatim.
 3. Validate that no user notes, examples, or analogies were deleted (Zero-Omission Rule).
-4. Verify that in `visual-notes/style.css`:
+4. Verify that in `visual notes/style.css`:
    - All `strong` elements use Dark Yellow/Amber (`#D97706` / `#FBBF24`) for both text and underline.
    - Only leading numbered list pointer titles (`ol > li > strong:first-child`) use Vivid Pink (`#DB2777` / `#F472B6`).
    - No stray brackets or syntax errors exist in CSS or JS.

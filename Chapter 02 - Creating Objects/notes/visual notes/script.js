@@ -154,6 +154,101 @@
     });
   });
 
+
+  // ---- Shallow vs Deep Copy Simulator ----
+  // Copy s3 into s4 under either strategy, then run both destructors and see
+  // whether the heap float is freed once (deep) or twice (shallow).
+  var simRoot = document.getElementById('copy-sim');
+  if (simRoot){
+    var simMode    = 'shallow';
+    var simCopied  = false;
+    var simDone    = false;
+    var s4      = document.getElementById('sim-s4');
+    var heap1   = document.getElementById('sim-heap1');
+    var heap1sub= document.getElementById('sim-heap1-sub');
+    var heap2   = document.getElementById('sim-heap2');
+    var verdict = document.getElementById('sim-verdict');
+    var log     = document.getElementById('sim-log');
+    var btnCopy = document.getElementById('sim-copy');
+    var btnDest = document.getElementById('sim-destroy');
+    var btnReset= document.getElementById('sim-reset');
+
+    function simLog(lines){
+      log.innerHTML = lines.length
+        ? lines.map(function(l){ return '<span class="sl ' + l[1] + '">' + l[0] + '</span>'; }).join('')
+        : '<span class="sl dim">(no output yet)</span>';
+    }
+
+    function simReset(){
+      simCopied = false; simDone = false;
+      s4.style.visibility = 'hidden';
+      heap2.style.visibility = 'hidden';
+      heap1.classList.remove('freed','double-freed');
+      heap2.classList.remove('freed','double-freed');
+      heap1sub.textContent = 'owned by s3';
+      verdict.className = 'sim-verdict';
+      verdict.textContent = 'Two objects, one pointer attribute. Pick a copy strategy above, then copy and destroy - and watch what happens to the heap.';
+      btnCopy.disabled = false; btnDest.disabled = true;
+      simLog([]);
+    }
+
+    function simCopy(){
+      simCopied = true;
+      s4.style.visibility = 'visible';
+      btnCopy.disabled = true; btnDest.disabled = false;
+      if (simMode === 'shallow'){
+        heap1sub.textContent = 'owned by s3 AND s4';
+        verdict.className = 'sim-verdict bad';
+        verdict.innerHTML = '<strong>Shallow copy done.</strong> Only the <em>address</em> was copied, so <code>s3.gpa</code> and <code>s4.gpa</code> now point at the same float. Two owners, one allocation.';
+        simLog([['Student s4(s3);   // copy ctor runs','dim'],
+                ['s4.gpa = s3.gpa   -> both hold the SAME address','warn']]);
+      } else {
+        heap2.style.visibility = 'visible';
+        heap1sub.textContent = 'owned by s3';
+        verdict.className = 'sim-verdict ok';
+        verdict.innerHTML = '<strong>Deep copy done.</strong> A fresh float was allocated and the <em>value</em> copied into it. Each object owns its own memory.';
+        simLog([['Student s4(s3);   // copy ctor runs','dim'],
+                ['s4.gpa = new float(*s3.gpa)   -> separate allocation','good']]);
+      }
+    }
+
+    function simDestroy(){
+      simDone = true; btnDest.disabled = true;
+      if (simMode === 'shallow'){
+        heap1.classList.add('double-freed');
+        verdict.className = 'sim-verdict bad';
+        verdict.innerHTML = '<strong>Double free - undefined behaviour.</strong> s4’s destructor deleted the float, then s3’s destructor deleted the very same address again. This is the crash the deep copy exists to prevent.';
+        simLog([['~Student()   // s4 destroyed first (created last)','dim'],
+                ['delete s4.gpa;   -> float freed','good'],
+                ['~Student()   // s3 destroyed','dim'],
+                ['delete s3.gpa;   -> SAME address freed AGAIN','warn'],
+                ['*** undefined behaviour: double free ***','warn']]);
+      } else {
+        heap1.classList.add('freed');
+        heap2.classList.add('freed');
+        verdict.className = 'sim-verdict ok';
+        verdict.innerHTML = '<strong>Clean teardown.</strong> Each destructor freed exactly the allocation its own object owned. No leak, no double free.';
+        simLog([['~Student()   // s4 destroyed first (created last)','dim'],
+                ['delete s4.gpa;   -> float #2 freed','good'],
+                ['~Student()   // s3 destroyed','dim'],
+                ['delete s3.gpa;   -> float #1 freed','good'],
+                ['*** both objects released cleanly ***','good']]);
+      }
+    }
+
+    simRoot.querySelectorAll('[data-mode]').forEach(function(b){
+      b.addEventListener('click', function(){
+        simMode = b.getAttribute('data-mode');
+        simRoot.querySelectorAll('[data-mode]').forEach(function(x){ x.classList.toggle('sel', x === b); });
+        simReset();
+      });
+    });
+    btnCopy.addEventListener('click', simCopy);
+    btnDest.addEventListener('click', simDestroy);
+    btnReset.addEventListener('click', simReset);
+    simReset();
+  }
+
   // ---- Back to top ----
   var topBtn = document.getElementById('back-to-top');
   if (topBtn){

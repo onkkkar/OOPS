@@ -445,35 +445,42 @@ yash, yash-copy, yash</div>
         <pre class="code"><code><span class="kw">this</span>-&gt;gpa = source.gpa; <span class="cm">// WRONG once gpa is a pointer - copies the address, not the value</span></code></pre>
         <div class="prose"><p>then the new object and <code>source</code> would both point at the <strong>same</strong> heap <code>float</code>. Two objects, one shared piece of memory - and both of their destructors will eventually call <code>delete</code> on it.</p></div>
 
-        <figure class="figure">
+        <figure class="figure" id="copy-sim">
           <div class="figure-inner">
             <span class="tick tl"></span><span class="tick br"></span>
-            <div class="ptr-diagram">
+
+            <div class="sim-controls">
+              <span class="sim-note">Copy constructor does:</span>
+              <button type="button" class="sim-btn sel" data-mode="shallow">this-&gt;gpa = source.gpa;</button>
+              <button type="button" class="sim-btn" data-mode="deep">this-&gt;gpa = new float(*source.gpa);</button>
+            </div>
+            <div class="sim-controls">
+              <button type="button" class="sim-btn" id="sim-copy">1. Copy s3 &rarr; s4</button>
+              <button type="button" class="sim-btn" id="sim-destroy" disabled>2. Run both destructors</button>
+              <button type="button" class="sim-btn" id="sim-reset">Reset</button>
+            </div>
+
+            <div class="ptr-diagram sim-stage">
               <div class="ptr-scenario">
-                <div class="ptr-scenario-label warn">Shallow Copy - Shared Address, Shared Ownership</div>
                 <div class="ptr-row">
                   <div class="ptr-col">
                     <div class="ptr-box">s3.gpa</div>
-                    <div class="ptr-box">s4.gpa</div>
+                    <div class="ptr-box" id="sim-s4" style="visibility:hidden;">s4.gpa</div>
                   </div>
-                  <div class="ptr-arrow warn">──▶</div>
-                  <div class="heap-box warn">float on heap<br><span style="font-weight:400;font-size:11px;">deleted TWICE - undefined behaviour</span></div>
-                </div>
-              </div>
-              <div class="ptr-scenario">
-                <div class="ptr-scenario-label ok">Deep Copy - Independent Addresses, Independent Ownership</div>
-                <div class="ptr-row">
-                  <div class="ptr-box">s3.gpa</div>
-                  <div class="ptr-arrow">──▶</div>
-                  <div class="heap-box">float #1</div>
-                </div>
-                <div class="ptr-row">
-                  <div class="ptr-box">s4.gpa</div>
-                  <div class="ptr-arrow">──▶</div>
-                  <div class="heap-box">float #2</div>
+                  <div class="ptr-arrow" id="sim-arrow">&#9472;&#9654;</div>
+                  <div class="ptr-col">
+                    <div class="heap-box" id="sim-heap1">float #1 on heap<br><span style="font-weight:400;font-size:11px;" id="sim-heap1-sub">owned by s3</span></div>
+                    <div class="heap-box" id="sim-heap2" style="visibility:hidden;">float #2 on heap<br><span style="font-weight:400;font-size:11px;">owned by s4</span></div>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <div class="sim-verdict" id="sim-verdict">
+              Two objects, one pointer attribute. Pick a copy strategy above, then copy and destroy - and watch what happens to the heap.
+            </div>
+
+            <div class="sim-log" id="sim-log"><span class="sl dim">(no output yet)</span></div>
           </div>
           <figcaption><span class="fig-no">FIG. 05</span> - shallow copy shares one float and double-frees it; deep copy gives each object its own</figcaption>
         </figure>
@@ -524,7 +531,18 @@ yash, yash-copy, yash</div>
       </div>
     </section>
 
-  </main>
+  
+      <nav class="chapter-nav" aria-label="Chapter navigation">
+        <a class="nav-prev" href="../../../Chapter%2001%20-%20Intro%20to%20OOPS/notes/visual%20notes/index.html">
+          <span class="nav-dir">&larr; Previous</span>
+          <span class="nav-title">01 &middot; Intro to OOPS</span>
+        </a>
+        <a class="nav-next" href="../../../Chapter%2003%20-%20Encapsulation/notes/visual%20notes/index.html">
+          <span class="nav-dir">Next &rarr;</span>
+          <span class="nav-title">03 &middot; Encapsulation</span>
+        </a>
+      </nav>
+    </main>
 </div>
 
 <footer class="sheet">

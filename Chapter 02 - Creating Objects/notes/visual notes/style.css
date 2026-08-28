@@ -1029,3 +1029,113 @@ pre.code:hover .copy-btn, .copy-btn:focus-visible { opacity: 1; }
 .lifecycle .lc-step p { margin: 0; font-size: 14px; color: var(--ink-soft); }
 .lifecycle .lc-step strong { color: var(--ink); font-weight: 700; }
 .lifecycle .lc-stem { width: 2px; height: 22px; background: var(--line-strong); }
+
+/* ============ CHAPTER FOOTER NAVIGATION (shared across all chapters) ============ */
+.chapter-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 3.5rem 0 1rem 0;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--line-strong);
+}
+
+.chapter-nav a {
+  display: block;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  text-decoration: none;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chapter-nav a:hover {
+  border-color: var(--blue);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.chapter-nav a.nav-next {
+  grid-column: 2;
+  text-align: right;
+}
+
+.chapter-nav .nav-dir {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 0.3rem;
+}
+
+.chapter-nav .nav-title {
+  display: block;
+  font-family: 'Big Shoulders Display', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--blue);
+}
+
+@media (max-width: 640px) {
+  .chapter-nav { grid-template-columns: 1fr; }
+  .chapter-nav a.nav-next { grid-column: 1; text-align: left; }
+}
+
+/* ---- Copy Simulator (shallow vs deep, Lane A) ---- */
+.sim-controls { display:flex; gap:.55rem; align-items:center; flex-wrap:wrap; margin:0 0 1rem 0; }
+
+.sim-btn {
+  font-family:'IBM Plex Mono',monospace; font-size:.76rem; font-weight:600;
+  padding:.42rem .9rem; border-radius:3px; cursor:pointer;
+  border:1px solid var(--line-strong); background:var(--paper-sunk); color:var(--ink);
+  transition:all .18s ease;
+}
+.sim-btn:hover { border-color:var(--blue); color:var(--blue); }
+.sim-btn.sel { border-color:var(--blue); background:var(--blue-tint); color:var(--blue); box-shadow:0 0 0 2px var(--blue-glow); }
+.sim-btn[disabled] { opacity:.45; cursor:not-allowed; }
+.sim-btn[disabled]:hover { border-color:var(--line-strong); color:var(--ink); }
+
+.sim-note {
+  font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--ink-faint);
+}
+
+.sim-stage .ptr-box, .sim-stage .heap-box, .sim-stage .ptr-arrow {
+  transition: all .3s ease;
+}
+
+.sim-stage .heap-box.freed {
+  opacity:.35; text-decoration:line-through; border-style:dashed;
+}
+.sim-stage .heap-box.double-freed {
+  border-color:#DC2626; color:#DC2626; background:rgba(220,38,38,.12);
+  animation: simShake .4s ease;
+}
+@keyframes simShake {
+  0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)}
+}
+
+.sim-verdict {
+  margin-top:1rem; padding:.85rem 1rem; border-radius:4px;
+  border-left:4px solid var(--line-strong); background:var(--paper-sunk);
+  font-size:.92rem; color:var(--ink);
+}
+.sim-verdict.ok   { border-left-color:#059669; background:rgba(5,150,105,.10); }
+.sim-verdict.bad  { border-left-color:#DC2626; background:rgba(220,38,38,.10); }
+.sim-verdict strong { color:inherit; }
+
+.sim-log {
+  margin-top:.85rem; background:#0F172A; color:#F1F5F9;
+  border-radius:4px; padding:.8rem 1rem;
+  font-family:'IBM Plex Mono',monospace; font-size:.78rem; line-height:1.65;
+  min-height:5.5rem;
+}
+.sim-log .sl { display:block; }
+.sim-log .sl.warn { color:#FCA5A5; }
+.sim-log .sl.good { color:#6EE7B7; }
+.sim-log .sl.dim  { color:#64748B; }

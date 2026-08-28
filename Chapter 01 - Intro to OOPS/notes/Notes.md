@@ -1,5 +1,9 @@
 # Chapter 01 - Introduction to OOPS
 
+This is where the course begins. Before we can build classes, constructors, or security boundaries, we have to understand **why** object-oriented programming exists at all. This chapter traces the problem backwards: it starts inside the paradigm that came before OOP, pushes that paradigm until it visibly breaks, and only then introduces the container idea that fixes it. Chapter 02 will take that container and actually build one.
+
+$$\text{Object} = \text{An Instance of a Class}$$
+
 ---
 
 ## 📌 Table of Contents
@@ -18,6 +22,9 @@
 - [What is OOP? (Object-Oriented Programming System)](#what-is-oop-object-oriented-programming-system)
 - [Objects and Classes](#objects-and-classes)
 - [Attributes & Behaviour](#attributes--behaviour)
+- [Key Implementation Rules & Gotchas](#key-implementation-rules--gotchas)
+- [Source Code Walkthrough](#source-code-walkthrough)
+  - [1. functional-programming.cpp](#1-functional-programmingcpp)
 - [Summary](#summary)
 
 ---
@@ -69,7 +76,7 @@ a **global variable**.
 Let's solve this the only way functional programming lets us: with plain
 variables and plain functions.
 
-> 📄 **Source Code Reference**: See the executable C++ code in [`coding/1. functional-programming.cpp`](file:///Users/onkarpatel/dev/my/OOPS/Chapter%2001%20-%20Intro%20to%20OOPS/coding/1.%20functional-programming.cpp).
+> 📄 **Source Code Reference**: See the executable C++ code in [`coding/1. functional-programming.cpp`](../coding/1.%20functional-programming.cpp).
 
 ### Attempt 1 - One Student
 
@@ -127,7 +134,7 @@ void duplicateVariables()
     study(id2, age2, name2);
     study(id3, age3, name3);
 
-    // compiles fine, but silently wrong — mixed up students' data
+    // compiles fine, but silently wrong - mixed up students' data
     study(id1, age2, name3);
 }
 ```
@@ -200,7 +207,7 @@ REAL WORLD ENTITY (Student)            FUNCTIONAL PROGRAMMING (Scattered Pieces)
 
 Nothing in the language says these six belong together. They're just three
 loose variables and three loose functions sitting in a file. "Rahul" only
-exists in _our head_ — we have to remember that `id`, `age`, and `name` are
+exists in _our head_ - we have to remember that `id`, `age`, and `name` are
 one person, and remember to hand them to `study()` on every call so that
 `study()` knows whom it is talking about.
 
@@ -252,7 +259,7 @@ study(ids[i], ages[i], names[i], subjectsCount[i]);          // parallelArrays()
 ```
 
 Five call sites, scattered across the file, all needing to be found and fixed
-by hand — for one new property on one function.
+by hand - for one new property on one function.
 
 ```
 THE RIPPLE EFFECT OF PARAMETER CHANGES:
@@ -274,8 +281,8 @@ THE RIPPLE EFFECT OF PARAMETER CHANGES:
 ```
 
 And this is the small version. The moment some _other_, unrelated function
-calls `study()` on a student's behalf — say a `dailyRoutine()` that just runs
-`study(); eat(); sleep();` in sequence — that function has to start accepting
+calls `study()` on a student's behalf - say a `dailyRoutine()` that just runs
+`study(); eat(); sleep();` in sequence - that function has to start accepting
 `numberOfSubjects` too, purely to forward it along, even though it never uses
 the value itself. Nothing marks `numberOfSubjects` as "belongs to the
 student, available wherever the student's data already is." It has to be
@@ -323,7 +330,7 @@ it has nothing to do with student data at all. But `schoolName` is global, so
 `teach()` can freely read it _and silently overwrite it_:
 
 ```cpp
-// --- unrelated to students, but can still read AND overwrite schoolName — global data has no privacy ---
+// --- unrelated to students, but can still read AND overwrite schoolName - global data has no privacy ---
 void teach()
 {
     cout << "Teaching a class at " << schoolName << endl;
@@ -371,7 +378,7 @@ declare a global in functional programming, **everyone** can read it and
 students, and only student behaviours may touch it."
 
 So one unrelated function can quietly corrupt data the rest of the program
-depends on, and the compiler never warns us — because as far as the language is
+depends on, and the compiler never warns us - because as far as the language is
 concerned, nothing was violated. There was no rule to violate in the first
 place.
 
@@ -400,7 +407,7 @@ equally-anonymous functions. So:
 
 Every one of those boundaries exists only in the programmer's head. What we
 actually need is a way to draw the boundary **in the code itself**: a line
-where we can say "this data and these behaviours are one thing — inside is
+where we can say "this data and these behaviours are one thing - inside is
 theirs, outside stays out."
 
 ```
@@ -423,8 +430,8 @@ Object-Oriented Goal (Encapsulated & Bounded):
 
 ### 5. No Modularity - Code Becomes Monolithic
 
-As we add more students, more teachers, more subjects — all handled the same
-way, as more flat variables and more flat functions — everything piles into
+As we add more students, more teachers, more subjects - all handled the same
+way, as more flat variables and more flat functions - everything piles into
 one undifferentiated set of globals and functions with no sub-grouping. There
 is no unit smaller than "the whole file" to reason about, test, or reuse.
 Functional programming code like this can become monolithic and increasingly
@@ -432,7 +439,7 @@ difficult to maintain as it grows.
 
 ## Towards a Solution: The "Container" Idea
 
-Imagine, instead, a single container — a **box** — that holds data (`id`, `name`, `age`) together, _and_ holds the behaviours (`study()`, `eat()`, `sleep()`) that act on them, all bound together as **one unified unit**.
+Imagine, instead, a single container - a **box** - that holds data (`id`, `name`, `age`) together, _and_ holds the behaviours (`study()`, `eat()`, `sleep()`) that act on them, all bound together as **one unified unit**.
 
 ```
 +-------------------------------------------------------+
@@ -458,7 +465,7 @@ Imagine, instead, a single container — a **box** — that holds data (`id`, `n
 3. **Formalizing Class and Object**:
    - **Class**: This "container" or blueprint is formally introduced as a **Class**.
    - **Object**: A container filled in with real values is what we call an **Object**.
-4. **Restoring Modularity**: OOPS brings back the **modularity** that functional programming lost — grouping related data and behaviour into self-contained, reusable units instead of one flat pile of globals and functions.
+4. **Restoring Modularity**: OOPS brings back the **modularity** that functional programming lost - grouping related data and behaviour into self-contained, reusable units instead of one flat pile of globals and functions.
 
 ---
 
@@ -565,7 +572,131 @@ _Summary_: The actual cars on the road (**Fortuner**, **WagonR**) are real **Obj
 +----------------+  +----------------+  +----------------+
 ```
 
-All of them — **Rahul**, **Ram**, and **Kunal** — are individual instances of the `Person` class. Every one of them is an **Object** possessing its own unique attribute values while sharing the common set of behaviours defined by the `Person` blueprint.
+All of them - **Rahul**, **Ram**, and **Kunal** - are individual instances of the `Person` class. Every one of them is an **Object** possessing its own unique attribute values while sharing the common set of behaviours defined by the `Person` blueprint.
+
+---
+
+## Key Implementation Rules & Gotchas
+
+1. **Parameter Order Is Silent and Unchecked:** Passing `study(age, id, name)` instead of `study(id, age, name)` compiles cleanly and runs, because both `id` and `age` are `int`. The bug surfaces only as wrong output. Grouping the data into one unit removes the whole class of mistake.
+2. **Grouping Only Exists in Your Head:** In functional programming, nothing in the language records that `id`, `age`, and `name` belong to the same student. That relationship lives in naming discipline and memory, not in the code.
+3. **Adding One Attribute Ripples Everywhere:** A new property means editing every function signature that needs it, plus every call site of those functions, plus every function that merely forwards the values along. One new field, many edits, and any one of them can be forgotten.
+4. **Global Data Has No Owner and No Privacy:** A global like `schoolName` can be read and overwritten by any function anywhere in the program, including functions with nothing to do with students. The compiler never warns, because as far as the language is concerned nothing is wrong.
+5. **Parallel Arrays Keep Correctness in the Index:** Storing students as `ids[]`, `ages[]`, and `names[]` means correctness depends entirely on every array staying the same length and every loop using the same index. Nothing enforces it.
+6. **Bad Design Still Has to Compile:** The example file deliberately demonstrates poor architecture - global state, loose variables, parallel arrays. It is still valid, compiling C++. Bad design means poor structure, never broken syntax.
+
+---
+
+## Source Code Walkthrough
+
+### 1. functional-programming.cpp
+
+From [`coding/1. functional-programming.cpp`](../coding/1.%20functional-programming.cpp):
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// =========================================================================
+// Functional Programming Paradigm (Before OOP)
+// =========================================================================
+// Demonstrates how procedural/functional programming organizes data and
+// functions separately, and the scaling/security bottlenecks that arise.
+// =========================================================================
+
+// ---------------- Global Data (Shared State) ----------------
+// Problem: Global data has no privacy or access restrictions;
+// any function across the codebase can read and mutate it.
+string schoolName = "DPS";
+
+// ---------------- Student Behaviour Functions ----------------
+// Functions must take every piece of student data as separate parameters.
+
+void study(int id, int age, string name)
+{
+    cout << name << " (id: " << id << ", age: " << age << ") is Studying at " << schoolName << endl;
+}
+
+void eat(int id, int age, string name)
+{
+    cout << name << " is Eating" << endl;
+}
+
+void sleep(int id, int age, string name)
+{
+    cout << name << " is Sleeping" << endl;
+}
+
+// ---------------- Scaling Attempt 1: Duplicate Variables ----------------
+// Problem: Variables multiply exponentially; mixing up arguments is silently valid.
+void duplicateVariables()
+{
+    int id1 = 1, id2 = 2, id3 = 3;
+    int age1 = 20, age2 = 21, age3 = 19;
+    string name1 = "Rahul", name2 = "Aman", name3 = "Simran";
+
+    study(id1, age1, name1);
+    study(id2, age2, name2);
+    study(id3, age3, name3);
+
+    // Compiles fine, but silently wrong - data mismatch bug
+    study(id1, age2, name3);
+}
+
+// ---------------- Scaling Attempt 2: Parallel Arrays ----------------
+// Problem: Arrays are uncoordinated; no single entity bounds id[i] to name[i].
+void parallelArrays()
+{
+    int ids[3] = {1, 2, 3};
+    int ages[3] = {20, 21, 19};
+    string names[3] = {"Rahul", "Aman", "Simran"};
+
+    for (int i = 0; i < 3; i++)
+    {
+        study(ids[i], ages[i], names[i]);
+    }
+}
+
+// ---------------- Global State Pollution ----------------
+// An unrelated function can silently corrupt global state without ownership.
+void teach()
+{
+    cout << "Teaching a class at " << schoolName << endl;
+    schoolName = "Hacked High";
+}
+
+// =========================================================================
+// Main Execution Function
+// =========================================================================
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    // ---------------- 1. Single Student Representation ----------------
+    int id = 1;
+    int age = 20;
+    string name = "Rahul";
+
+    study(id, age, name);
+    eat(id, age, name);
+    sleep(id, age, name);
+
+    // ---------------- 2. Scaling to Multiple Students ----------------
+    duplicateVariables();
+
+    // ---------------- 3. Parallel Arrays Approach ----------------
+    parallelArrays();
+
+    // ---------------- 4. Uncontrolled State Mutation ----------------
+    teach();
+
+    // Global data was silently mutated by an external function
+    cout << "School is now: " << schoolName << endl;
+
+    return 0;
+}
+```
 
 ---
 
@@ -575,3 +706,11 @@ All of them — **Rahul**, **Ram**, and **Kunal** — are individual instances o
 2. **Real-World Alignment**: Identifying code structures that map directly to real-life entities and structuring code using classes and objects signifies the application of core OOP principles.
 3. **Core Building Blocks**: **Classes** and **Objects** serve as the foundational building blocks of the entire Object-Oriented Programming paradigm.
 4. **Major OOP Languages**: Prominent Object-Oriented programming languages include **C++**, **Java**, and **JavaScript** (JS).
+
+---
+
+<!-- chapter-nav -->
+
+| Previous | Next |
+| :--- | ---: |
+|  | [Chapter 02 - Creating Objects &rarr;](../../Chapter%2002%20-%20Creating%20Objects/notes/Notes.md) |

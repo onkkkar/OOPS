@@ -16,7 +16,7 @@ public:
     string name;
 
     // ---------------- Private Attributes ----------------
-    // Accessible ONLY within this class — hidden from external world
+    // Accessible ONLY within this class - hidden from external world
 private:
     int age;
     string gfName;

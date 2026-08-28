@@ -833,6 +833,104 @@ pre.code {
   visibility: visible;
 }
 
+
+/* ---- Access Modifier Probe (interactive matrix) ---- */
+.probe {
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--paper-raised);
+  padding: 1.4rem 1.5rem;
+  margin: 1.75rem 0;
+  box-shadow: var(--shadow);
+}
+
+.probe-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+}
+
+.probe-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  min-width: 9.5rem;
+}
+
+.probe-opt {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--paper-sunk);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.probe-opt:hover { border-color: var(--blue); color: var(--blue); }
+
+.probe-opt.sel {
+  border-color: var(--blue);
+  background: var(--blue-tint);
+  color: var(--blue);
+  box-shadow: 0 0 0 2px var(--blue-glow);
+}
+
+.probe-verdict {
+  margin-top: 1.1rem;
+  padding: 1rem 1.2rem;
+  border-radius: var(--radius);
+  border-left: 4px solid var(--line-strong);
+  background: var(--paper-sunk);
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.probe-verdict.allow { border-left-color: var(--emerald); background: var(--emerald-tint); }
+.probe-verdict.deny  { border-left-color: var(--rose);    background: var(--rose-tint); }
+
+.probe-verdict .pv-head {
+  font-family: 'Big Shoulders Display', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.probe-verdict.allow .pv-head { color: var(--emerald); }
+.probe-verdict.deny  .pv-head { color: var(--rose); }
+
+.probe-verdict .pv-why { font-size: 0.95rem; color: var(--ink); margin-bottom: 0.6rem; }
+
+.probe-verdict .pv-code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-sm);
+  display: block;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* matrix row highlight driven by the probe */
+table.spec-table tr { transition: background-color 0.2s ease; }
+table.spec-table tr.row-lit td { background: var(--blue-tint); }
+table.spec-table td.cell-lit {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+  font-weight: 700;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .layout {
@@ -842,4 +940,61 @@ pre.code {
   aside.sidebar {
     display: none;
   }
+}
+
+/* ============ CHAPTER FOOTER NAVIGATION (shared across all chapters) ============ */
+.chapter-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 3.5rem 0 1rem 0;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--line-strong);
+}
+
+.chapter-nav a {
+  display: block;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  text-decoration: none;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chapter-nav a:hover {
+  border-color: var(--blue);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.chapter-nav a.nav-next {
+  grid-column: 2;
+  text-align: right;
+}
+
+.chapter-nav .nav-dir {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 0.3rem;
+}
+
+.chapter-nav .nav-title {
+  display: block;
+  font-family: 'Big Shoulders Display', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--blue);
+}
+
+@media (max-width: 640px) {
+  .chapter-nav { grid-template-columns: 1fr; }
+  .chapter-nav a.nav-next { grid-column: 1; text-align: left; }
 }

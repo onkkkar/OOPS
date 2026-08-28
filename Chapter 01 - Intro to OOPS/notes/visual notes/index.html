@@ -243,16 +243,27 @@
         <figure class="figure">
           <div class="figure-inner">
             <span class="tick tl"></span><span class="tick br"></span>
-            <div class="fan-wrap">
-              <div class="node root">Add numberOfSubjects to student properties</div>
+            <div class="ripple-controls">
+              <button type="button" class="ripple-btn" id="ripple-add">Add <code>numberOfSubjects</code></button>
+              <button type="button" class="ripple-btn" id="ripple-fix" disabled>Fix next call site</button>
+              <button type="button" class="ripple-btn" id="ripple-reset">Reset</button>
+              <span class="ripple-count" id="ripple-count">0 edits pending</span>
+            </div>
+
+            <div class="fan-wrap" id="ripple-fan">
+              <div class="node root dormant">Add numberOfSubjects to student properties</div>
               <div class="stem"></div>
-              <div class="node warn" style="max-width:460px">study(id, age, name, numberOfSubjects) - signature changed!</div>
+              <div class="node warn dormant" data-ripple="0" style="max-width:460px">study(id, age, name, numberOfSubjects) - signature changed!</div>
               <div class="fan-row">
-                <div class="fan-item"><div class="node">main() call site<br><span style="opacity:.65">needs update</span></div></div>
-                <div class="fan-item"><div class="node">duplicateVariables()<br><span style="opacity:.65">3 calls to update</span></div></div>
-                <div class="fan-item"><div class="node">parallelArrays() loop<br><span style="opacity:.65">array needs update</span></div></div>
-                <div class="fan-item"><div class="node">dailyRoutine()<br><span style="opacity:.65">must forward unused param</span></div></div>
+                <div class="fan-item"><div class="node dormant" data-ripple="1">main() call site<br><span style="opacity:.65">needs update</span></div></div>
+                <div class="fan-item"><div class="node dormant" data-ripple="2">duplicateVariables()<br><span style="opacity:.65">3 calls to update</span></div></div>
+                <div class="fan-item"><div class="node dormant" data-ripple="3">parallelArrays() loop<br><span style="opacity:.65">array needs update</span></div></div>
+                <div class="fan-item"><div class="node dormant" data-ripple="4">dailyRoutine()<br><span style="opacity:.65">must forward unused param</span></div></div>
               </div>
+            </div>
+
+            <div class="ripple-verdict" id="ripple-verdict">
+              One student gains one new property. Press <strong>Add</strong> and watch how far the change has to travel.
             </div>
           </div>
           <figcaption><span class="fig-no">FIG. 02</span> - one new property, five call sites to hunt down by hand</figcaption>
@@ -560,7 +571,14 @@ School is now: Hacked High</div>
       </div>
     </section>
 
-  </main>
+  
+      <nav class="chapter-nav" aria-label="Chapter navigation">
+        <a class="nav-next" href="../../../Chapter%2002%20-%20Creating%20Objects/notes/visual%20notes/index.html">
+          <span class="nav-dir">Next &rarr;</span>
+          <span class="nav-title">02 &middot; Creating Objects</span>
+        </a>
+      </nav>
+    </main>
 </div>
 
 <footer class="sheet">

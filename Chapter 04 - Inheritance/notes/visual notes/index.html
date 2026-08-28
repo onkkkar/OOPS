@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 04 - Inheritance | Object-Oriented Programming</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,600&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <div class="layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="toc-title">Chapter 04 Index</div>
+      <nav class="toc">
+        <ul>
+          <li><a href="#what-is-inheritance">01. What is Inheritance?</a></li>
+          <li class="sub-item"><a href="#terminology">Base &amp; Derived Terminology</a></li>
+          <li class="sub-item"><a href="#is-a-relationship">The IS-A Relationship</a></li>
+          <li><a href="#duplication-problem">02. The Duplication Problem</a></li>
+          <li class="sub-item"><a href="#without-inheritance">Life Without Inheritance</a></li>
+          <li class="sub-item"><a href="#with-inheritance">Life With Inheritance</a></li>
+          <li><a href="#syntax">03. Syntax &amp; Inheritance Mode</a></li>
+          <li class="sub-item"><a href="#memory-layout">What the Child Owns</a></li>
+          <li><a href="#chaining">04. Ctor &amp; Dtor Chaining</a></li>
+          <li class="sub-item"><a href="#initializer-list">Member Initializer List</a></li>
+          <li class="sub-item"><a href="#lifecycle-order">Lifecycle Order</a></li>
+          <li><a href="#access-under-inheritance">05. Access Specifiers</a></li>
+          <li class="sub-item"><a href="#private-blocked">Private is Blocked</a></li>
+          <li class="sub-item"><a href="#protected-specifier">Protected Unlocks It</a></li>
+          <li class="sub-item"><a href="#access-matrix">Access Matrix</a></li>
+          <li><a href="#extensibility">06. Extensibility</a></li>
+          <li class="sub-item"><a href="#hierarchy-diagram">The Vehicle Hierarchy</a></li>
+          <li><a href="#rules-gotchas">07. Rules &amp; Gotchas</a></li>
+          <li><a href="#source-walkthrough">08. Source Code</a></li>
+          <li><a href="#summary">09. Summary</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Article Content -->
+    <main>
+      <!-- Hero Header -->
+      <header class="hero">
+        <div class="meta-badges">
+          <span class="tag">Module 04</span>
+          <span class="tag tag-blue">Core OOP Pillar</span>
+          <span class="tag tag-green" id="read-time">~14 min read</span>
+        </div>
+        <h1>CHAPTER 04 - INHERITANCE</h1>
+        <p class="subtitle">
+          Code reuse, the IS-A relationship, constructor chaining, protected access, and extensible class hierarchies.
+        </p>
+      </header>
+
+      <!-- Section 1: Definition -->
+      <section id="what-is-inheritance" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">01</span>
+          <h2>What is Inheritance?</h2>
+        </div>
+        <p>
+          <strong>Inheritance</strong> is the mechanism by which one class (the <em>child</em>) acquires all the attributes and behaviours of another class (the <em>parent</em>), and is then free to add its own. The child does not copy the parent's code - the child <strong>contains</strong> the parent. Every <code>Car</code> object physically carries a complete <code>Vehicle</code> sub-object inside it.
+        </p>
+
+        <div class="math-block">
+          $$\text{Inheritance} = \text{Reuse of Parent State and Behaviour} + \text{Child-Specific Extension}$$
+        </div>
+
+        <div class="callout">
+          <div class="callout-title">The Real-World Analogy</div>
+          <p>
+            A Car <strong>is a</strong> Vehicle. A Bike <strong>is a</strong> Vehicle. Both of them start an engine, both of them have a name, a model and a number of tyres. Only the extras differ - a Car has doors and a transmission, a Bike has a handlebar style and a suspension type.
+          </p>
+        </div>
+
+        <p>
+          Everything that is true of <em>every</em> vehicle belongs in <code>Vehicle</code>. Everything that is true of <em>only cars</em> belongs in <code>Car</code>. That single sentence is the entire design rule of inheritance.
+        </p>
+
+        <section id="terminology" class="sub">
+          <h3>Base Class and Derived Class Terminology</h3>
+          <p>The same two roles go by several interchangeable names:</p>
+
+          <div class="table-wrapper">
+            <table class="spec-table">
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Also Called</th>
+                  <th>In Our Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Base Class</strong></td>
+                  <td>Parent Class, Super Class</td>
+                  <td><code>Vehicle</code></td>
+                </tr>
+                <tr>
+                  <td><strong>Derived Class</strong></td>
+                  <td>Child Class, Sub Class</td>
+                  <td><code>Car</code>, <code>Bike</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="is-a-relationship" class="sub">
+          <h3>The IS-A Relationship</h3>
+          <p>
+            Inheritance models an <strong>IS-A</strong> relationship, and this is the test you apply before writing <code>:</code> in a class header:
+          </p>
+
+          <div class="isa-row isa-pass">
+            <span><code>Car</code> IS-A <code>Vehicle</code></span>
+            <span class="isa-verdict">✅ Inheritance is correct</span>
+          </div>
+          <div class="isa-row isa-pass">
+            <span><code>Bike</code> IS-A <code>Vehicle</code></span>
+            <span class="isa-verdict">✅ Inheritance is correct</span>
+          </div>
+          <div class="isa-row isa-fail">
+            <span><code>Car</code> IS-A <code>Engine</code></span>
+            <span class="isa-verdict">❌ A Car HAS-A Engine - use composition</span>
+          </div>
+
+          <p>
+            If the sentence "Child IS-A Parent" does not read as plain English truth, inheritance is the wrong tool.
+          </p>
+        </section>
+      </section>
+
+      <!-- Section 2: The Duplication Problem -->
+      <section id="duplication-problem" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">02</span>
+          <h2>Why Inheritance Exists: The Duplication Problem</h2>
+        </div>
+
+        <section id="without-inheritance" class="sub">
+          <h3>Life Without Inheritance</h3>
+          <p>
+            Suppose we model <code>Car</code> and <code>Bike</code> as two unrelated classes. Both need a name, a model, a tyre count, and both need to start and stop an engine:
+          </p>
+
+          <div class="diagram-box">
+            <pre class="diagram-pre">
+        WITHOUT INHERITANCE (Duplicated Code)
++---------------------------+   +---------------------------+
+|        class Car          |   |        class Bike         |
+|---------------------------|   |---------------------------|
+|  name                     |   |  name                     |   &lt;-- duplicated
+|  model                    |   |  model                    |   &lt;-- duplicated
+|  numberOfTyres            |   |  numberOfTyres            |   &lt;-- duplicated
+|  startEngine()            |   |  startEngine()            |   &lt;-- duplicated
+|  stopEngine()             |   |  stopEngine()             |   &lt;-- duplicated
+|---------------------------|   |---------------------------|
+|  numberOfDoors            |   |  handleBarStyle           |
+|  transmissionType         |   |  suspensionType           |
+|  StartAC()                |   |  wheelie()                |
++---------------------------+   +---------------------------+
+
+Problem: fix a bug in startEngine() and you must fix it in EVERY class.</pre>
+          </div>
+
+          <p>
+            Add a <code>Truck</code>, a <code>Bus</code>, and a <code>Tractor</code>, and the same five members get copy-pasted five more times. A single change to engine logic now means five edits, and the day you forget one of them, the classes silently disagree.
+          </p>
+        </section>
+
+        <section id="with-inheritance" class="sub">
+          <h3>Life With Inheritance</h3>
+          <p>The two headline benefits:</p>
+
+          <div class="card-grid">
+            <div class="card">
+              <span class="tag tag-blue">Benefit 1</span>
+              <div class="card-title">Code Reusability</div>
+              <p>
+                The shared members are written once in <code>Vehicle</code> and reused by every child, with zero duplication. One bug fix reaches every vehicle in the system.
+              </p>
+            </div>
+
+            <div class="card">
+              <span class="tag tag-green">Benefit 2</span>
+              <div class="card-title">Extensibility</div>
+              <p>
+                A new vehicle type costs one new small class. <code>Vehicle</code> itself is never touched, so nothing that already works can break.
+              </p>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Section 3: Syntax -->
+      <section id="syntax" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">03</span>
+          <h2>Syntax &amp; The Inheritance Mode</h2>
+        </div>
+
+        <pre class="code"><span class="kw">class</span> <span class="ty">Car</span> : <span class="kw">public</span> <span class="ty">Vehicle</span>
+{
+    <span class="cm">// Car's own extra members</span>
+};</pre>
+
+        <div class="diagram-box">
+          <pre class="diagram-pre">
+    class   Car    :    public    Vehicle
+            ▲           ▲         ▲
+            │           │         └── Base Class (Parent)
+            │           └──────────── Inheritance Mode (access specifier)
+            └──────────────────────── Derived Class (Child)</pre>
+        </div>
+
+        <p>
+          The mode written between the <code>:</code> and the parent name controls how the parent's members are re-labelled inside the child. We use <strong><code>public</code> mode</strong> throughout this chapter, and its rule is the simplest one:
+        </p>
+
+        <div class="alert-box alert-important">
+          <strong><code>public</code> mode:</strong> private members are inherited as private, protected members are inherited as protected, and public members are inherited as public. In other words, <code>public</code> inheritance <em>changes nothing</em> - every member keeps the visibility the parent gave it. This is why it is the mode used in almost all real-world IS-A modelling.
+        </div>
+
+        <div class="table-wrapper">
+          <table class="spec-table">
+            <thead>
+              <tr>
+                <th>Inheritance Mode</th>
+                <th>Parent <code>public</code> becomes</th>
+                <th>Parent <code>protected</code> becomes</th>
+                <th>Parent <code>private</code> becomes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>public</code></td>
+                <td><code>public</code></td>
+                <td><code>protected</code></td>
+                <td>Not accessible</td>
+              </tr>
+              <tr>
+                <td><code>protected</code></td>
+                <td><code>protected</code></td>
+                <td><code>protected</code></td>
+                <td>Not accessible</td>
+              </tr>
+              <tr>
+                <td><code>private</code></td>
+                <td><code>private</code></td>
+                <td><code>private</code></td>
+                <td>Not accessible</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="alert-box alert-warning">
+          <strong>Note:</strong> In every mode, the parent's <code>private</code> members are <em>inherited</em> (they occupy memory inside the child object) but are <strong>never directly accessible</strong> to the child.
+        </div>
+
+        <section id="memory-layout" class="sub">
+          <h3>What the Child Actually Owns</h3>
+          <div class="diagram-box">
+            <pre class="diagram-pre">
+        Car A("Maruti", "LXI", 4, 4, "Manual");
+
+    ┌─────────────────────────────────────────────────────────────────────┐
+    │                          Car OBJECT  'A'                            │
+    │                                                                     │
+    │   ┌─────────────────────────────────────────────────────────────┐   │
+    │   │        INHERITED Vehicle SUB-OBJECT (built first)           │   │
+    │   │                                                             │   │
+    │   │   Attributes:              Methods:                         │   │
+    │   │   ├── name  = "Maruti"     ├── startEngine()                │   │
+    │   │   ├── model = "LXI"        └── stopEngine()                 │   │
+    │   │   └── numberOfTyres = 4                                     │   │
+    │   └─────────────────────────────────────────────────────────────┘   │
+    │                                                                     │
+    │   ┌─────────────────────────────────────────────────────────────┐   │
+    │   │        Car'S OWN EXTENSION (built second)                   │   │
+    │   │                                                             │   │
+    │   │   Attributes:                    Methods:                   │   │
+    │   │   ├── numberOfDoors = 4          └── StartAC()              │   │
+    │   │   └── transmissionType = "Manual"                           │   │
+    │   └─────────────────────────────────────────────────────────────┘   │
+    └─────────────────────────────────────────────────────────────────────┘
+
+    A.startEngine();  ──► reaches into the inherited Vehicle sub-object
+    A.StartAC();      ──► Car's own method, and it can read 'name' from above</pre>
+          </div>
+        </section>
+      </section>
+
+      <!-- Section 4: Constructor & Destructor Chaining -->
+      <section id="chaining" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">04</span>
+          <h2>Constructor &amp; Destructor Chaining</h2>
+        </div>
+        <p>
+          Creating one <code>Car</code> object runs <strong>two</strong> constructors, in a fixed order. The <code>Car</code> constructor body is free to use <code>name</code>, <code>model</code>, and <code>numberOfTyres</code> - members that belong to <code>Vehicle</code>. Those members must already exist and already be initialised before the <code>Car</code> body starts running.
+        </p>
+
+        <div class="callout">
+          <div class="callout-title">The Governing Rule</div>
+          <p>
+            Build the foundation before the floors above it. The parent is constructed <strong>first</strong> and destroyed <strong>last</strong>.
+          </p>
+        </div>
+
+        <section id="initializer-list" class="sub">
+          <h3>The Member Initializer List</h3>
+          <p>
+            Because <code>Vehicle</code> has no default (zero-argument) constructor - it only has a parameterised one - the child must explicitly say <em>which</em> parent constructor to call and <em>what</em> to pass it. That is the job of the <strong>member initializer list</strong>, the part after the colon in the child's constructor:
+          </p>
+
+          <pre class="code">    <span class="fn">Car</span>(<span class="ty">string</span> _name, <span class="ty">string</span> _model, <span class="ty">int</span> _tyres, <span class="ty">int</span> _doors, <span class="ty">string</span> _transmission) : <span class="fn">Vehicle</span>(_name, _model, _tyres)
+    {
+        cout &lt;&lt; <span class="str">"Inside Car ctor"</span> &lt;&lt; endl;
+        <span class="kw">this</span>-&gt;numberOfDoors = _doors;
+        <span class="kw">this</span>-&gt;transmissionType = _transmission;
+    }</pre>
+
+          <ol>
+            <li><strong>Accept Everything:</strong> The child ctor accepts <em>all five</em> values - three belonging to <code>Vehicle</code>, two belonging to <code>Car</code>.</li>
+            <li><strong>Forward Upward:</strong> <code>: Vehicle(_name, _model, _tyres)</code> forwards the parent's three values upward and runs the parent ctor.</li>
+            <li><strong>Then Extend:</strong> Only after the parent finishes does the <code>Car</code> body execute and assign its own two attributes.</li>
+          </ol>
+
+          <div class="alert-box alert-important">
+            <strong>Gotcha:</strong> If you omit the <code>: Vehicle(...)</code> call, the compiler tries to invoke <code>Vehicle</code>'s <em>default</em> constructor. Since <code>Vehicle</code> does not define one, compilation fails with <code>no matching function for call to 'Vehicle::Vehicle()'</code>.
+          </div>
+        </section>
+
+        <section id="lifecycle-order" class="sub">
+          <h3>Lifecycle Order: Construction Down, Destruction Up</h3>
+          <p>
+            Destruction is the exact mirror image of construction. This is the only order that is safe: the child's destructor may still need the parent's data while cleaning up, so the parent must survive until the child is completely finished.
+          </p>
+
+          <div class="lifecycle">
+            <div class="lifecycle-col ctor-col">
+              <h4>Construction (Base → Derived)</h4>
+              <div class="lifecycle-step" data-step="0"><span class="step-num">1.</span><span>Vehicle ctor → "Inside Vehicle ctor"</span></div>
+              <div class="lifecycle-step" data-step="1"><span class="step-num">2.</span><span>Car ctor → "Inside Car ctor"</span></div>
+              <div class="lifecycle-step" data-step="2"><span class="step-num">→</span><span>Object is now fully alive</span></div>
+            </div>
+
+            <div class="lifecycle-col dtor-col">
+              <h4>Destruction (Derived → Base)</h4>
+              <div class="lifecycle-step" data-step="3"><span class="step-num">3.</span><span>Car dtor → "Default Dtor Called for Car !!"</span></div>
+              <div class="lifecycle-step" data-step="4"><span class="step-num">4.</span><span>Vehicle dtor → "dtor of Vehicle called !!"</span></div>
+              <div class="lifecycle-step" data-step="5"><span class="step-num">→</span><span>Memory fully released</span></div>
+            </div>
+          </div>
+
+          <div class="chain-controls">
+            <button type="button" class="chain-btn" id="chain-step">Step &rarr;</button>
+            <button type="button" class="chain-btn" id="chain-play">Play all</button>
+            <button type="button" class="chain-btn" id="chain-reset">Reset</button>
+            <span class="chain-status" id="chain-status">Not started - press Step to construct the object</span>
+          </div>
+
+          <div class="chain-console" id="chain-console">
+            <span class="console-label">Program output</span>
+          </div>
+
+          <p>Actual program output of <code>1. single-inheritance.cpp</code>:</p>
+          <div class="diagram-box">
+            <pre class="diagram-pre">
+Inside Vehicle ctor            &lt;-- parent first
+Inside Car ctor                &lt;-- child second
+Engine Started
+AC has Started of Maruti
+Engine Stopped
+LXIMaruti44Manual
+Default Dtor Called for Car !! &lt;-- child destroyed first
+dtor of Vehicle called !!      &lt;-- parent destroyed last</pre>
+          </div>
+        </section>
+      </section>
+
+      <!-- Section 5: Access Specifiers Under Inheritance -->
+      <section id="access-under-inheritance" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">05</span>
+          <h2>Access Specifiers Under Inheritance</h2>
+        </div>
+        <p>
+          Chapter 03 introduced <code>public</code>, <code>private</code>, and <code>protected</code>. Inheritance is where the third one finally earns its existence.
+        </p>
+
+        <section id="private-blocked" class="sub">
+          <h3>Private Members Are Inherited but Not Accessible</h3>
+          <p>Suppose <code>name</code> is <code>private</code> inside <code>Vehicle</code>. Now inside <code>Car</code>:</p>
+
+          <pre class="code">    <span class="ty">void</span> <span class="fn">StartAC</span>()
+    {
+        <span class="cm">// cout &lt;&lt; name;   // COMPILATION ERROR: 'name' is private in Vehicle</span>
+    }</pre>
+
+          <p>
+            The attribute genuinely exists inside every <code>Car</code> object - it was allocated, and the <code>Vehicle</code> constructor filled it in. But the compiler refuses to let <code>Car</code> read it. <strong>Private means private to the class that declared it, and nobody else - not even a child.</strong>
+          </p>
+
+          <h4>The Getter Workaround</h4>
+          <p>
+            The parent already solved this problem in Chapter 03: expose a <strong>public getter</strong>. The getter is a member of <code>Vehicle</code>, so <em>it</em> is allowed to touch <code>name</code>, and the child inherits the getter as public:
+          </p>
+
+          <pre class="code"><span class="cm">// Inside Vehicle</span>
+    <span class="ty">string</span> <span class="fn">getName</span>()
+    {
+        <span class="kw">return this</span>-&gt;name;
+    }
+
+<span class="cm">// Inside Car - the legal route in</span>
+    <span class="ty">void</span> <span class="fn">StartAC</span>()
+    {
+        cout &lt;&lt; <span class="str">"AC has Started of "</span> &lt;&lt; <span class="fn">getName</span>() &lt;&lt; endl;
+    }</pre>
+
+          <p>
+            This works, and it is perfectly correct design - but notice the cost. Every private attribute the child needs demands another accessor method on the parent.
+          </p>
+        </section>
+
+        <section id="protected-specifier" class="sub">
+          <h3>Protected: The Specifier Built for Inheritance</h3>
+          <p>Change <code>name</code> from <code>private</code> to <code>protected</code>, and <code>Car</code> may use it directly, with no getter in between:</p>
+
+          <pre class="code"><span class="kw">class</span> <span class="ty">Vehicle</span>
+{
+<span class="kw">protected</span>:
+    <span class="ty">string</span> name;      <span class="cm">// child can touch it, the outside world cannot</span>
+<span class="kw">public</span>:
+    <span class="ty">string</span> model;
+};
+
+<span class="cm">// Inside Car</span>
+    <span class="ty">void</span> <span class="fn">StartAC</span>()
+    {
+        cout &lt;&lt; <span class="str">"AC has Started of "</span> &lt;&lt; name &lt;&lt; endl;   <span class="cm">// legal now</span>
+    }
+
+<span class="cm">// Inside main() - still blocked</span>
+    <span class="cm">// cout &lt;&lt; A.name;   // COMPILATION ERROR: 'name' is protected</span></pre>
+
+          <div class="callout">
+            <div class="callout-title">The Middle Ground</div>
+            <p>
+              <code>protected</code> is private to the outside world, but public to the family. If code <em>outside</em> the hierarchy needs the value, the child exposes its own getter - <code>Car</code> is allowed to read <code>name</code>, so <code>Car</code> is allowed to return it.
+            </p>
+          </div>
+
+          <div class="hierarchy">
+            <div class="class-card base-card">
+              <div class="class-name">Vehicle</div>
+              <div class="class-role">Base Class · Parent</div>
+
+              <div class="member-label">Public - Child ✅ / World ✅</div>
+              <div class="pill-group">
+                <span class="pill pill-pub" data-specifier="public">model</span>
+                <span class="pill pill-pub" data-specifier="public">numberOfTyres</span>
+                <span class="pill pill-pub" data-specifier="public">startEngine()</span>
+                <span class="pill pill-pub" data-specifier="public">stopEngine()</span>
+              </div>
+
+              <div class="member-label">Protected - Child ✅ / World ❌</div>
+              <div class="pill-group">
+                <span class="pill pill-prot" data-specifier="protected">name</span>
+              </div>
+
+              <div class="member-label">Private - Child ❌ / World ❌</div>
+              <div class="pill-group">
+                <span class="pill pill-priv" data-specifier="private">engineNumber</span>
+              </div>
+            </div>
+
+            <div class="inherit-link">
+              <span class="inherit-mode">: public Vehicle</span>
+            </div>
+
+            <div class="derived-row">
+              <div class="class-card derived-card">
+                <div class="class-name">Car</div>
+                <div class="class-role">Derived Class · Child</div>
+                <div class="member-label">Own Extension</div>
+                <div class="pill-group">
+                  <span class="pill pill-pub">numberOfDoors</span>
+                  <span class="pill pill-pub">transmissionType</span>
+                  <span class="pill pill-pub">StartAC()</span>
+                </div>
+                <div class="inherited-note">
+                  ✅ model, numberOfTyres, startEngine(), stopEngine()<br>
+                  ✅ name (protected)<br>
+                  ❌ engineNumber (private - blocked)
+                </div>
+              </div>
+
+              <div class="class-card derived-card">
+                <div class="class-name">Bike</div>
+                <div class="class-role">Derived Class · Child</div>
+                <div class="member-label">Own Extension</div>
+                <div class="pill-group">
+                  <span class="pill pill-prot">handleBarStyle</span>
+                  <span class="pill pill-prot">suspensionType</span>
+                  <span class="pill pill-pub">wheelie()</span>
+                </div>
+                <div class="inherited-note">
+                  ✅ model, numberOfTyres, startEngine(), stopEngine()<br>
+                  ✅ name (protected)<br>
+                  ❌ engineNumber (private - blocked)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p>
+            <em>Hover any card above:</em> hovering a child lights up the base class and the exact members it inherits; hovering the base lights up every child that reuses it.
+          </p>
+        </section>
+
+        <section id="access-matrix" class="sub">
+          <h3>Access Matrix Under Inheritance</h3>
+          <p>Hover a specifier pill in the diagram above to highlight its row here.</p>
+
+          <div class="table-wrapper">
+            <table class="spec-table">
+              <thead>
+                <tr>
+                  <th>Access Specifier in Parent</th>
+                  <th>Inside Parent</th>
+                  <th>Inside Child (Derived)</th>
+                  <th>Outside / <code>main()</code></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-row="public">
+                  <td><code>public</code></td>
+                  <td>✅ Yes</td>
+                  <td>✅ Yes</td>
+                  <td>✅ Yes</td>
+                </tr>
+                <tr data-row="protected">
+                  <td><code>protected</code></td>
+                  <td>✅ Yes</td>
+                  <td>✅ Yes</td>
+                  <td>❌ No</td>
+                </tr>
+                <tr data-row="private">
+                  <td><code>private</code></td>
+                  <td>✅ Yes</td>
+                  <td>❌ No</td>
+                  <td>❌ No</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <!-- Section 6: Extensibility -->
+      <section id="extensibility" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">06</span>
+          <h2>Extensibility &amp; Hierarchical Inheritance</h2>
+        </div>
+        <p>
+          <strong>Hierarchical inheritance</strong> is the pattern where a single base class is extended by two or more independent derived classes. <code>Vehicle</code> is written once; <code>Car</code> and <code>Bike</code> each inherit it and pull in completely different directions.
+        </p>
+
+        <p>
+          <code>Car</code> gets doors, a transmission, and an air conditioner. <code>Bike</code> gets a handlebar style, a suspension type, and a wheelie. Neither knows the other exists. Both start and stop an engine using the exact same code, written exactly once.
+        </p>
+
+        <section id="hierarchy-diagram" class="sub">
+          <h3>The Vehicle Hierarchy</h3>
+          <div class="diagram-box">
+            <pre class="diagram-pre">
+                        ┌─────────────────────────────┐
+                        │      BASE: Vehicle          │
+                        │─────────────────────────────│
+                        │  protected:                 │
+                        │    name, model,             │
+                        │    numberOfTyres            │
+                        │  public:                    │
+                        │    startEngine()            │
+                        │    stopEngine()             │
+                        └──────────────┬──────────────┘
+                                       │
+                   ┌───────────────────┴───────────────────┐
+                   │ : public Vehicle                      │ : public Vehicle
+                   ▼                                       ▼
+    ┌─────────────────────────────┐         ┌─────────────────────────────┐
+    │       DERIVED: Car          │         │       DERIVED: Bike         │
+    │─────────────────────────────│         │─────────────────────────────│
+    │  public:                    │         │  protected:                 │
+    │    numberOfDoors            │         │    handleBarStyle           │
+    │    transmissionType         │         │    suspensionType           │
+    │    StartAC()                │         │  public:                    │
+    │                             │         │    wheelie()                │
+    │  + everything from Vehicle  │         │  + everything from Vehicle  │
+    └─────────────────────────────┘         └─────────────────────────────┘
+
+              ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+              │  FUTURE: Truck, Bus, Tractor ...          │
+              │  each costs ONE new class.                │
+              │  Vehicle is never edited, so nothing      │
+              │  that already works can break.            │
+              └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘</pre>
+          </div>
+
+          <h4>Why This Is the Real Payoff</h4>
+          <p>
+            Running the hierarchical example makes the reuse visible in the output. Creating a <code>Car</code> and then a <code>Bike</code> produces:
+          </p>
+
+          <div class="diagram-box">
+            <pre class="diagram-pre">
+Inside Vehicle ctor          &lt;-- Vehicle ctor runs for the Car
+Inside Car ctor
+Engine Started               &lt;-- Vehicle's code
+AC has Started of Maruti     &lt;-- Car's own code
+Engine Stopped               &lt;-- Vehicle's code
+
+Inside Vehicle ctor          &lt;-- the SAME Vehicle ctor runs for the Bike
+Bike ctor called !!
+Engine Started               &lt;-- the SAME Vehicle code, zero duplication
+Wheelie karri hai Hero       &lt;-- Bike's own code
+Engine Stopped
+
+Bike dtor called !!          &lt;-- Bike destroyed first (declared last)
+dtor of Vehicle called !!
+Default Dtor Called for Car !!
+dtor of Vehicle called !!</pre>
+          </div>
+
+          <p>
+            Two objects, two very different vehicles, one shared engine implementation. That is <strong>extensibility</strong>: the system grows outward at the leaves while the trunk stays untouched.
+          </p>
+        </section>
+      </section>
+
+      <!-- Section 7: Rules & Gotchas -->
+      <section id="rules-gotchas" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">07</span>
+          <h2>Key Implementation Rules &amp; Gotchas</h2>
+        </div>
+
+        <ol>
+          <li><strong>Apply the IS-A Test First:</strong> Write <code>class Child : public Parent</code> only when "Child IS-A Parent" is literally true. If the relationship is really "has a", use composition (a member object) instead.</li>
+          <li><strong>Public Mode Preserves Visibility:</strong> With <code>: public Parent</code>, every inherited member keeps the exact access level the parent gave it.</li>
+          <li><strong>Private Is Inherited but Sealed:</strong> A private base member occupies memory in the child object but is unreachable from the child's code. Only a public or protected member function of the parent can hand it over.</li>
+          <li><strong>Use protected for Family Data:</strong> When the child legitimately needs a parent attribute, <code>protected</code> avoids a getter chain while still blocking the outside world.</li>
+          <li><strong>Parent Constructs First, Destructs Last:</strong> Construction runs base → derived; destruction runs derived → base. The parent is the foundation, so it must exist before and outlive the child's own members.</li>
+          <li><strong>Forward Parent Arguments Explicitly:</strong> If the parent has no default constructor, the child <em>must</em> call a parent constructor in its member initializer list, or compilation fails.</li>
+          <li><strong>Constructors Are Not Inherited:</strong> The child does not automatically get the parent's constructors as its own; it defines its own and forwards to the parent.</li>
+          <li><strong>Destructors Are Not Inherited Either:</strong> Each class writes its own destructor, and C++ chains the calls automatically - you never call the parent destructor by hand.</li>
+        </ol>
+      </section>
+
+      <!-- Section 8: Source Code Walkthrough -->
+      <section id="source-walkthrough" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">08</span>
+          <h2>Source Code Walkthrough</h2>
+        </div>
+
+        <h3>1. single-inheritance.cpp</h3>
+        <p>From <code>coding/1. single-inheritance.cpp</code>:</p>
+        <pre class="code"><span class="cm">#include &lt;bits/stdc++.h&gt;</span>
+<span class="kw">using namespace</span> <span class="ty">std</span>;
+
+<span class="kw">class</span> <span class="ty">Vehicle</span>
+{
+<span class="kw">public</span>:
+    <span class="ty">string</span> name;
+    <span class="ty">string</span> model;
+    <span class="ty">int</span> numberOfTyres;
+
+<span class="kw">public</span>:
+    <span class="fn">Vehicle</span>(<span class="ty">string</span> _name, <span class="ty">string</span> _model, <span class="ty">int</span> _tyres)
+    {
+        cout &lt;&lt; <span class="str">"Inside Vehicle ctor"</span> &lt;&lt; endl;
+        <span class="kw">this</span>-&gt;name = _name;
+        <span class="kw">this</span>-&gt;model = _model;
+        <span class="kw">this</span>-&gt;numberOfTyres = _tyres;
+    }
+
+    <span class="ty">void</span> <span class="fn">startEngine</span>() { cout &lt;&lt; <span class="str">"Engine Started"</span> &lt;&lt; endl; }
+    <span class="ty">void</span> <span class="fn">stopEngine</span>()  { cout &lt;&lt; <span class="str">"Engine Stopped"</span> &lt;&lt; endl; }
+
+    ~<span class="fn">Vehicle</span>() { cout &lt;&lt; <span class="str">"dtor of Vehicle called !!"</span> &lt;&lt; endl; }
+};
+
+<span class="cm">// class Car : accessSpecifier(mode) Vehicle</span>
+<span class="kw">class</span> <span class="ty">Car</span> : <span class="kw">public</span> <span class="ty">Vehicle</span>
+{
+<span class="kw">public</span>:
+    <span class="ty">int</span> numberOfDoors;
+    <span class="ty">string</span> transmissionType;
+
+    <span class="fn">Car</span>(<span class="ty">string</span> _name, <span class="ty">string</span> _model, <span class="ty">int</span> _tyres, <span class="ty">int</span> _doors, <span class="ty">string</span> _transmission) : <span class="fn">Vehicle</span>(_name, _model, _tyres)
+    {
+        cout &lt;&lt; <span class="str">"Inside Car ctor"</span> &lt;&lt; endl;
+        <span class="kw">this</span>-&gt;numberOfDoors = _doors;
+        <span class="kw">this</span>-&gt;transmissionType = _transmission;
+    }
+
+    <span class="ty">void</span> <span class="fn">StartAC</span>()
+    {
+        <span class="cm">// 'name' belongs to Vehicle, but it is inherited, so Car can use it</span>
+        cout &lt;&lt; <span class="str">"AC has Started of "</span> &lt;&lt; name &lt;&lt; endl;
+    }
+
+    ~<span class="fn">Car</span>() { cout &lt;&lt; <span class="str">"Default Dtor Called for Car !!"</span> &lt;&lt; endl; }
+};
+
+<span class="ty">int</span> <span class="fn">main</span>()
+{
+    <span class="ty">Car</span> A(<span class="str">"Maruti"</span>, <span class="str">"LXI"</span>, <span class="num">4</span>, <span class="num">4</span>, <span class="str">"Manual"</span>);
+
+    A.<span class="fn">startEngine</span>(); <span class="cm">// inherited from Vehicle</span>
+    A.<span class="fn">StartAC</span>();     <span class="cm">// Car's own method</span>
+    A.<span class="fn">stopEngine</span>();  <span class="cm">// inherited from Vehicle</span>
+
+    cout &lt;&lt; A.model &lt;&lt; A.name &lt;&lt; A.numberOfDoors &lt;&lt; A.numberOfTyres &lt;&lt; A.transmissionType &lt;&lt; endl;
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+
+        <h3>2. private-members-in-inheritance.cpp</h3>
+        <p>From <code>coding/2. private-members-in-inheritance.cpp</code>:</p>
+        <pre class="code"><span class="kw">class</span> <span class="ty">Vehicle</span>
+{
+    <span class="cm">// Private by default - hidden even from the Child</span>
+    <span class="ty">string</span> name;
+
+<span class="kw">public</span>:
+    <span class="ty">string</span> model;
+    <span class="ty">int</span> numberOfTyres;
+
+<span class="kw">public</span>:
+    <span class="fn">Vehicle</span>(<span class="ty">string</span> _name, <span class="ty">string</span> _model, <span class="ty">int</span> _tyres)
+    {
+        <span class="kw">this</span>-&gt;name = _name; <span class="cm">// legal: we are inside Vehicle itself</span>
+        <span class="kw">this</span>-&gt;model = _model;
+        <span class="kw">this</span>-&gt;numberOfTyres = _tyres;
+    }
+
+    <span class="cm">// Getter - the only door to the private attribute</span>
+    <span class="ty">string</span> <span class="fn">getName</span>()
+    {
+        <span class="kw">return this</span>-&gt;name;
+    }
+};
+
+<span class="kw">class</span> <span class="ty">Car</span> : <span class="kw">public</span> <span class="ty">Vehicle</span>
+{
+<span class="kw">public</span>:
+    <span class="ty">void</span> <span class="fn">StartAC</span>()
+    {
+        <span class="cm">// cout &lt;&lt; name;      // COMPILATION ERROR: 'name' is private in Vehicle</span>
+        cout &lt;&lt; <span class="str">"AC has Started of "</span> &lt;&lt; <span class="fn">getName</span>() &lt;&lt; endl;
+    }
+};</pre>
+
+        <h3>3. protected-members.cpp</h3>
+        <p>From <code>coding/3. protected-members.cpp</code>:</p>
+        <pre class="code"><span class="kw">class</span> <span class="ty">Vehicle</span>
+{
+<span class="kw">protected</span>:
+    <span class="ty">string</span> name;
+
+<span class="kw">public</span>:
+    <span class="ty">string</span> model;
+    <span class="ty">int</span> numberOfTyres;
+
+    <span class="ty">string</span> <span class="fn">getName</span>() { <span class="kw">return this</span>-&gt;name; }
+};
+
+<span class="kw">class</span> <span class="ty">Car</span> : <span class="kw">public</span> <span class="ty">Vehicle</span>
+{
+<span class="kw">public</span>:
+    <span class="ty">void</span> <span class="fn">StartAC</span>()
+    {
+        <span class="cm">// Direct access is legal now - 'name' is protected, not private</span>
+        cout &lt;&lt; <span class="str">"AC has Started of "</span> &lt;&lt; name &lt;&lt; endl;
+    }
+
+    <span class="cm">// Child's own getter - re-exposes the protected base attribute</span>
+    <span class="ty">string</span> <span class="fn">getName</span>() { <span class="kw">return this</span>-&gt;name; }
+};
+
+<span class="ty">int</span> <span class="fn">main</span>()
+{
+    <span class="ty">Car</span> A(<span class="str">"Maruti"</span>, <span class="str">"LXI"</span>, <span class="num">4</span>, <span class="num">4</span>, <span class="str">"Manual"</span>);
+    <span class="cm">// cout &lt;&lt; A.name;   // COMPILATION ERROR: 'name' is protected, blocked outside</span>
+    cout &lt;&lt; A.model &lt;&lt; A.<span class="fn">getName</span>() &lt;&lt; endl;
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+
+        <h3>4. extensibility-hierarchical.cpp</h3>
+        <p>From <code>coding/4. extensibility-hierarchical.cpp</code>:</p>
+        <pre class="code"><span class="kw">class</span> <span class="ty">Vehicle</span>
+{
+<span class="kw">protected</span>:
+    <span class="ty">string</span> name;
+    <span class="ty">string</span> model;
+    <span class="ty">int</span> numberOfTyres;
+
+<span class="kw">public</span>:
+    <span class="fn">Vehicle</span>(<span class="ty">string</span> _name, <span class="ty">string</span> _model, <span class="ty">int</span> _tyres)
+    {
+        cout &lt;&lt; <span class="str">"Inside Vehicle ctor"</span> &lt;&lt; endl;
+        <span class="kw">this</span>-&gt;name = _name;
+        <span class="kw">this</span>-&gt;model = _model;
+        <span class="kw">this</span>-&gt;numberOfTyres = _tyres;
+    }
+
+    <span class="ty">void</span> <span class="fn">startEngine</span>() { cout &lt;&lt; <span class="str">"Engine Started"</span> &lt;&lt; endl; }
+    <span class="ty">void</span> <span class="fn">stopEngine</span>()  { cout &lt;&lt; <span class="str">"Engine Stopped"</span> &lt;&lt; endl; }
+
+    ~<span class="fn">Vehicle</span>() { cout &lt;&lt; <span class="str">"dtor of Vehicle called !!"</span> &lt;&lt; endl; }
+};
+
+<span class="kw">class</span> <span class="ty">Car</span> : <span class="kw">public</span> <span class="ty">Vehicle</span>
+{
+<span class="kw">public</span>:
+    <span class="ty">int</span> numberOfDoors;
+    <span class="ty">string</span> transmissionType;
+
+    <span class="fn">Car</span>(<span class="ty">string</span> _name, <span class="ty">string</span> _model, <span class="ty">int</span> _tyres, <span class="ty">int</span> _doors, <span class="ty">string</span> _transmission) : <span class="fn">Vehicle</span>(_name, _model, _tyres)
+    {
+        cout &lt;&lt; <span class="str">"Inside Car ctor"</span> &lt;&lt; endl;
+        <span class="kw">this</span>-&gt;numberOfDoors = _doors;
+        <span class="kw">this</span>-&gt;transmissionType = _transmission;
+    }
+
+    <span class="ty">void</span> <span class="fn">StartAC</span>() { cout &lt;&lt; <span class="str">"AC has Started of "</span> &lt;&lt; name &lt;&lt; endl; }
+
+    ~<span class="fn">Car</span>() { cout &lt;&lt; <span class="str">"Default Dtor Called for Car !!"</span> &lt;&lt; endl; }
+};
+
+<span class="kw">class</span> <span class="ty">Bike</span> : <span class="kw">public</span> <span class="ty">Vehicle</span>
+{
+<span class="kw">protected</span>:
+    <span class="ty">string</span> handleBarStyle;
+    <span class="ty">string</span> suspensionType;
+
+<span class="kw">public</span>:
+    <span class="fn">Bike</span>(<span class="ty">string</span> _name, <span class="ty">string</span> _model, <span class="ty">int</span> _tyres, <span class="ty">int</span> _doors, <span class="ty">string</span> _handleBarStyle, <span class="ty">string</span> _suspensionType) : <span class="fn">Vehicle</span>(_name, _model, _tyres)
+    {
+        cout &lt;&lt; <span class="str">"Bike ctor called !!"</span> &lt;&lt; endl;
+        <span class="kw">this</span>-&gt;handleBarStyle = _handleBarStyle;
+        <span class="kw">this</span>-&gt;suspensionType = _suspensionType;
+    }
+
+    <span class="ty">void</span> <span class="fn">wheelie</span>() { cout &lt;&lt; <span class="str">"Wheelie karri hai "</span> &lt;&lt; name &lt;&lt; endl; }
+
+    ~<span class="fn">Bike</span>() { cout &lt;&lt; <span class="str">"Bike dtor called !!"</span> &lt;&lt; endl; }
+};
+
+<span class="ty">int</span> <span class="fn">main</span>()
+{
+    <span class="ty">Car</span> A(<span class="str">"Maruti"</span>, <span class="str">"LXI"</span>, <span class="num">4</span>, <span class="num">4</span>, <span class="str">"Manual"</span>);
+    A.<span class="fn">startEngine</span>(); <span class="cm">// reused from Vehicle</span>
+    A.<span class="fn">StartAC</span>();     <span class="cm">// Car's own extension</span>
+    A.<span class="fn">stopEngine</span>();  <span class="cm">// reused from Vehicle</span>
+
+    <span class="ty">Bike</span> B(<span class="str">"Hero"</span>, <span class="str">"vxi"</span>, <span class="num">2</span>, <span class="num">0</span>, <span class="str">"U"</span>, <span class="str">"hard"</span>);
+    B.<span class="fn">startEngine</span>(); <span class="cm">// same reused behaviour, zero duplicated code</span>
+    B.<span class="fn">wheelie</span>();     <span class="cm">// Bike's own extension</span>
+    B.<span class="fn">stopEngine</span>();
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+
+        <div class="alert-box alert-warning">
+          <strong>Name Hiding Preview:</strong> In <code>3. protected-members.cpp</code>, <code>Car::getName()</code> <em>hides</em> <code>Vehicle::getName()</code> because both share the same name and signature. Calling <code>A.getName()</code> resolves to the child's version - a first glimpse of the name-resolution rules that Polymorphism will formalise.
+        </div>
+      </section>
+
+      <!-- Section 9: Summary -->
+      <section id="summary" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">09</span>
+          <h2>Summary</h2>
+        </div>
+        <p>
+          Inheritance lets a child class acquire the state and behaviour of a parent and extend it, modelling the IS-A relationship. <code>public</code> mode preserves every member's original access level; construction runs base-first and destruction runs derived-first; <code>protected</code> is the specifier built specifically for the family, opening data to children while still sealing it from the outside world. The real payoff is <strong>extensibility</strong>: one base class, many children, shared code written exactly once, and new types added without ever editing what already works.
+        </p>
+      </section>
+    
+      <nav class="chapter-nav" aria-label="Chapter navigation">
+        <a class="nav-prev" href="../../../Chapter%2003%20-%20Encapsulation/notes/visual%20notes/index.html">
+          <span class="nav-dir">&larr; Previous</span>
+          <span class="nav-title">03 &middot; Encapsulation</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+
+  <!-- Floating Navigation Controls -->
+  <div class="floating-controls">
+    <button id="theme-toggle" class="ctrl-btn" aria-label="Toggle dark/light theme" title="Toggle Theme">☾</button>
+    <button id="width-toggle" class="ctrl-btn" aria-label="Toggle full width" title="Toggle Full Width">⊞</button>
+    <button id="back-to-top" class="ctrl-btn" aria-label="Scroll back to top" title="Back to top">↑</button>
+  </div>
+
+  <!-- Javascript -->
+  <script src="script.js"></script>
+</body>
+</html>

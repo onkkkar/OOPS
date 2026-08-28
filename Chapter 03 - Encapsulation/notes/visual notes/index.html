@@ -37,6 +37,7 @@
           <li class="sub-item"><a href="#public-specifier">Public</a></li>
           <li class="sub-item"><a href="#private-specifier">Private</a></li>
           <li class="sub-item"><a href="#protected-specifier">Protected</a></li>
+          <li class="sub-item"><a href="#access-probe">Try It: Access Probe</a></li>
           <li><a href="#perfect-encapsulation">06. Perfect Encapsulation</a></li>
           <li class="sub-item"><a href="#getters-setters">Getters and Setters</a></li>
           <li><a href="#rules-gotchas">07. Rules & Gotchas</a></li>
@@ -217,7 +218,7 @@
         <div class="callout">
           <div class="callout-title">The Architectural Goal</div>
           <p>
-            The goal is to implement classes in a manner that prevents unauthorized access to, or accidental modification of, the internal state of a class by its instances or external callers. The underlying algorithms of one class need not be known to another class—yet they can communicate seamlessly through clean public interfaces.
+            The goal is to implement classes in a manner that prevents unauthorized access to, or accidental modification of, the internal state of a class by its instances or external callers. The underlying algorithms of one class need not be known to another class - yet they can communicate seamlessly through clean public interfaces.
           </p>
         </div>
 
@@ -253,19 +254,19 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
+              <tr data-row="public">
                 <td><code>public</code></td>
                 <td>✅ Accessible</td>
                 <td>✅ Accessible</td>
                 <td>✅ Accessible</td>
               </tr>
-              <tr>
+              <tr data-row="protected">
                 <td><code>protected</code></td>
                 <td>✅ Accessible</td>
                 <td>✅ Accessible</td>
                 <td>❌ Blocked</td>
               </tr>
-              <tr>
+              <tr data-row="private">
                 <td><code>private</code></td>
                 <td>✅ Accessible</td>
                 <td>❌ Blocked</td>
@@ -274,6 +275,34 @@
             </tbody>
           </table>
         </div>
+
+        <section id="access-probe" class="sub">
+          <h3>Try It: The Access Probe</h3>
+          <p>
+            Pick a member's access specifier and pick who is trying to reach it. The verdict below is exactly what the C++ compiler would decide, and the matching row lights up in the matrix above.
+          </p>
+
+          <div class="probe" id="access-probe-widget">
+            <div class="probe-row">
+              <span class="probe-label">Member is</span>
+              <button type="button" class="probe-opt sel" data-spec="public">public</button>
+              <button type="button" class="probe-opt" data-spec="protected">protected</button>
+              <button type="button" class="probe-opt" data-spec="private">private</button>
+            </div>
+            <div class="probe-row">
+              <span class="probe-label">Accessed from</span>
+              <button type="button" class="probe-opt sel" data-who="same">Inside the same class</button>
+              <button type="button" class="probe-opt" data-who="derived">Inside a derived class</button>
+              <button type="button" class="probe-opt" data-who="outside">Outside / main()</button>
+            </div>
+
+            <div class="probe-verdict allow" id="probe-verdict">
+              <div class="pv-head">Allowed</div>
+              <div class="pv-why">A class can always reach its own members, whatever their specifier.</div>
+              <code class="pv-code">cout &lt;&lt; this-&gt;name;   // OK</code>
+            </div>
+          </div>
+        </section>
       </section>
 
       <!-- Section 6: Perfect Encapsulation -->
@@ -439,6 +468,17 @@
           Encapsulation wraps state and behaviour within an object while enforcing security boundaries. Through private attributes and public getters and setters, C++ programs achieve high modularity, robust data protection, and loose coupling between interacting entities.
         </p>
       </section>
+    
+      <nav class="chapter-nav" aria-label="Chapter navigation">
+        <a class="nav-prev" href="../../../Chapter%2002%20-%20Creating%20Objects/notes/visual%20notes/index.html">
+          <span class="nav-dir">&larr; Previous</span>
+          <span class="nav-title">02 &middot; Creating Objects</span>
+        </a>
+        <a class="nav-next" href="../../../Chapter%2004%20-%20Inheritance/notes/visual%20notes/index.html">
+          <span class="nav-dir">Next &rarr;</span>
+          <span class="nav-title">04 &middot; Inheritance</span>
+        </a>
+      </nav>
     </main>
   </div>
 

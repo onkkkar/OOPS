@@ -725,3 +725,11 @@ int main()
    - All 4 OOP pillars converge towards the overarching principle of Abstraction.
 =================================================================================
 ```
+
+---
+
+<!-- chapter-nav -->
+
+| Previous | Next |
+| :--- | ---: |
+| [&larr; Chapter 02 - Creating Objects](../../Chapter%2002%20-%20Creating%20Objects/notes/Notes.md) | [Chapter 04 - Inheritance &rarr;](../../Chapter%2004%20-%20Inheritance/notes/Notes.md) |

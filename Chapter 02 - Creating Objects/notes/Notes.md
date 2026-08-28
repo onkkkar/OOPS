@@ -45,7 +45,13 @@ last:
   - [Why the Destructor Must Clean Up Dynamic Attributes](#why-the-destructor-must-clean-up-dynamic-attributes)
     - [Deep Copy: Why the Copy Constructor Also Needs to Care](#deep-copy-why-the-copy-constructor-also-needs-to-care)
   - [Object Life Cycle](#object-life-cycle)
-  - [Summary](#summary)
+  - [Key Implementation Rules & Gotchas](#key-implementation-rules--gotchas)
+- [Source Code Walkthrough](#source-code-walkthrough)
+  - [1. class-blueprint.cpp](#1-class-blueprintcpp)
+  - [2. parameterised-constructor.cpp](#2-parameterised-constructorcpp)
+  - [3. copy-constructor.cpp](#3-copy-constructorcpp)
+  - [4. dynamic-allocation.cpp](#4-dynamic-allocationcpp)
+- [Summary](#summary)
 
 ---
 
@@ -505,6 +511,372 @@ sequence of stages:
 
 ---
 
+## Key Implementation Rules & Gotchas
+
+1. **The Free Default Constructor Disappears:** C++ auto-generates a default constructor only while you write none. The moment you define a parameterised constructor, the free `Student()` is gone, and `Student s1;` stops compiling unless you declare it back explicitly.
+2. **Destruction Is the Reverse of Creation:** Stack objects are destroyed in the exact reverse of the order they were created. The object declared last is destroyed first.
+3. **`this` Exists to Break Ties:** When a parameter shares a name with an attribute, the parameter wins inside the function body. `this->name = name;` is what tells C++ which of the two you mean.
+4. **The Copy Constructor Must Take a Reference:** `ClassName(const ClassName &source)` takes its argument by reference deliberately. Passing by value would itself require a copy, which would call the copy constructor, forever - infinite recursion. The `const` additionally guarantees the source is never modified while being copied.
+5. **What You `new`, You Must `delete`:** Heap objects are never cleaned up automatically. Forget the `delete` and the memory leaks *and* the destructor never runs at all.
+6. **A Pointer Attribute Costs You Twice:** An attribute allocated with `new` must be released in the destructor *and* deep-copied in the copy constructor. The default field-by-field copy duplicates the **address**, not the value, leaving two objects owning the same memory and eventually double-freeing it.
+7. **Use `->` on Pointers, `.` on Objects:** `s3.study()` for a stack object; `s6->study()` for a pointer to a heap object. `->` is shorthand for dereference-then-access.
+
+---
+
+## Source Code Walkthrough
+
+### 1. class-blueprint.cpp
+
+From [`coding/1. class-blueprint.cpp`](../coding/1.%20class-blueprint.cpp):
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// =========================================================================
+// Class: Student (Writing the Blueprint)
+// =========================================================================
+// A class is a blueprint/template describing what data and behaviours
+// every Student object will possess.
+// =========================================================================
+class Student
+{
+public:
+    // ---------------- Attributes / State / Properties ----------------
+    int id;
+    int age;
+    string name;
+
+    // ---------------- Default Constructor (ctor) ----------------
+    // Runs automatically the instant an object is created on stack or heap.
+    // If omitted, C++ generates a default constructor implicitly.
+    Student()
+    {
+        cout << "Default Constructor Called" << endl;
+    }
+
+    // ---------------- Behaviours / Methods / Functions ----------------
+    void study()
+    {
+        cout << this->name << " is Studying" << endl;
+    }
+
+    void sleep()
+    {
+        cout << this->name << " is Sleeping" << endl;
+    }
+
+    void bunk()
+    {
+        cout << this->name << " is Bunking" << endl;
+    }
+
+    // ---------------- Destructor (dtor) ----------------
+    // Runs automatically when an object goes out of scope and is destroyed.
+    ~Student()
+    {
+        cout << this->name << " - Default Destructor Called" << endl;
+    }
+};
+
+// =========================================================================
+// Main Execution Function
+// =========================================================================
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    // ---------------- 1. Creating First Object (s1) ----------------
+    // Default ctor runs, then attributes are assigned manually.
+    Student s1;
+    s1.name = "yash";
+    s1.age = 25;
+    s1.id = 6;
+    s1.sleep();
+
+    // ---------------- 2. Creating Second Object (s2) ----------------
+    // An independent instance in memory with its own state.
+    Student s2;
+    s2.name = "john";
+    s2.age = 20;
+    s2.id = 7;
+    s2.bunk();
+
+    // ---------------- 3. Displaying Object States ----------------
+    cout << s1.id << ", " << s1.age << ", " << s1.name << endl;
+    cout << s2.id << ", " << s2.age << ", " << s2.name << endl;
+
+    // ---------------- 4. Object Destruction ----------------
+    // Stack objects are destroyed in REVERSE order of creation (s2, then s1).
+    return 0;
+}
+```
+
+---
+
+### 2. parameterised-constructor.cpp
+
+From [`coding/2. parameterised-constructor.cpp`](../coding/2.%20parameterised-constructor.cpp):
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// =========================================================================
+// Class: Student (Parameterised Constructor & 'this' Pointer)
+// =========================================================================
+// Initializes object attributes at the instant of creation.
+// =========================================================================
+class Student
+{
+public:
+    // ---------------- Attributes ----------------
+    int id;
+    int age;
+    string name;
+    float gpa;
+
+    // ---------------- Default Constructor ----------------
+    Student()
+    {
+        cout << "Default Constructor Called" << endl;
+    }
+
+    // ---------------- Parameterised Constructor ----------------
+    // Takes initial values directly during object instantiation.
+    // 'this' resolves ambiguity between member attributes and parameter names.
+    Student(string name, int age, int id, float gpa)
+    {
+        this->name = name;
+        this->age = age;
+        this->id = id;
+        this->gpa = gpa;
+
+        cout << this->name << " - Parameterised Constructor Called" << endl;
+    }
+
+    // ---------------- Behaviours / Methods ----------------
+    void study()
+    {
+        cout << this->name << " is Studying" << endl;
+    }
+
+    // ---------------- Destructor ----------------
+    ~Student()
+    {
+        cout << this->name << " - Default Destructor Called" << endl;
+    }
+};
+
+// =========================================================================
+// Main Execution Function
+// =========================================================================
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    // ---------------- 1. Default Initialization ----------------
+    Student s1;
+    s1.name = "yash";
+    s1.age = 25;
+    s1.id = 6;
+
+    // ---------------- 2. Parameterised Initialization ----------------
+    // All attributes initialized atomically in one step.
+    Student s2("aman", 21, 7, 8.4f);
+
+    // ---------------- 3. Method Invocations ----------------
+    s1.study();
+    s2.study();
+
+    // ---------------- 4. Attribute Output ----------------
+    cout << s1.id << ", " << s1.age << ", " << s1.name << endl;
+    cout << s2.id << ", " << s2.age << ", " << s2.name << ", " << s2.gpa << endl;
+
+    return 0;
+}
+```
+
+---
+
+### 3. copy-constructor.cpp
+
+From [`coding/3. copy-constructor.cpp`](../coding/3.%20copy-constructor.cpp):
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// =========================================================================
+// Class: Student (Copy Constructor & Pass-By-Const-Reference)
+// =========================================================================
+// Creates a new independent object by copying an existing object's state.
+// =========================================================================
+class Student
+{
+public:
+    // ---------------- Attributes ----------------
+    int id;
+    int age;
+    string name;
+    float gpa;
+
+    // ---------------- Parameterised Constructor ----------------
+    Student(string name, int age, int id, float gpa)
+    {
+        this->name = name;
+        this->age = age;
+        this->id = id;
+        this->gpa = gpa;
+
+        cout << this->name << " - Parameterised Constructor Called" << endl;
+    }
+
+    // ---------------- Copy Constructor ----------------
+    // Builds a NEW object by copying fields from an existing object (`source`).
+    // Passed by const reference (&) to avoid infinite recursion and prevent mutation.
+    Student(const Student &source)
+    {
+        this->name = source.name;
+        this->age = source.age;
+        this->id = source.id;
+        this->gpa = source.gpa;
+
+        cout << this->name << " - Copy Constructor Called" << endl;
+    }
+
+    // ---------------- Behaviours / Methods ----------------
+    void study()
+    {
+        cout << this->name << " is Studying" << endl;
+    }
+
+    // ---------------- Destructor ----------------
+    ~Student()
+    {
+        cout << this->name << " - Default Destructor Called" << endl;
+    }
+};
+
+// =========================================================================
+// Main Execution Function
+// =========================================================================
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    // ---------------- 1. Original Object (s3) ----------------
+    Student s3("yash", 25, 6, 9.0f);
+
+    // ---------------- 2. Copy Constructor Invocations ----------------
+    Student s4(s3);  // Direct initialization form
+    Student s5 = s3; // Copy initialization form
+
+    // ---------------- 3. Mutation Independence ----------------
+    // s4 is an independent object; mutating s4 does not affect s3 or s5.
+    s4.name = "yash-copy";
+    cout << s3.name << ", " << s4.name << ", " << s5.name << endl;
+
+    return 0;
+}
+```
+
+---
+
+### 4. dynamic-allocation.cpp
+
+From [`coding/4. dynamic-allocation.cpp`](../coding/4.%20dynamic-allocation.cpp):
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// =========================================================================
+// Class: Student (Dynamic Allocation, Deep Copy & Destructor Cleanup)
+// =========================================================================
+// Demonstrates heap allocation of attributes and dynamic objects using new/delete.
+// =========================================================================
+class Student
+{
+public:
+    // ---------------- Attributes ----------------
+    int id;
+    int age;
+    string name;
+    float *gpa; // Dynamically allocated attribute on Heap
+
+    // ---------------- Parameterised Constructor ----------------
+    Student(string name, int age, int id, float gpa)
+    {
+        this->name = name;
+        this->age = age;
+        this->id = id;
+        this->gpa = new float(gpa); // Allocate heap memory for float
+
+        cout << this->name << " - Parameterised Constructor Called" << endl;
+    }
+
+    // ---------------- Copy Constructor (Deep Copy) ----------------
+    // Allocates separate heap memory for the new object and copies the value.
+    // Avoids shallow copy dangling pointers and double-free crashes.
+    Student(const Student &source)
+    {
+        this->name = source.name;
+        this->age = source.age;
+        this->id = source.id;
+        this->gpa = new float(*source.gpa); // Deep copy: fresh heap allocation
+
+        cout << this->name << " - Copy Constructor Called" << endl;
+    }
+
+    // ---------------- Behaviours / Methods ----------------
+    void study()
+    {
+        cout << this->name << " is Studying" << endl;
+    }
+
+    // ---------------- Destructor (Explicit Resource Cleanup) ----------------
+    // Must delete dynamically allocated attributes to prevent memory leaks.
+    ~Student()
+    {
+        cout << this->name << " - Default Destructor Called" << endl;
+        delete this->gpa; // Free allocated heap memory
+    }
+};
+
+// =========================================================================
+// Main Execution Function
+// =========================================================================
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    // ---------------- 1. Stack Allocation (Automatic Lifetime) ----------------
+    // Lifetime managed by stack scope; accessed using '.' operator.
+    Student s3("yash", 25, 6, 9.0f);
+    cout << s3.id << ", " << s3.age << ", " << s3.name << ", " << *s3.gpa << endl;
+
+    // ---------------- 2. Heap / Dynamic Allocation (Manual Lifetime) ----------------
+    // 'new' allocates Student on Heap and returns a pointer; accessed with '->'.
+    Student *s6 = new Student("kunal", 22, 8, 7.5f);
+
+    cout << s6->id << ", " << s6->age << ", " << s6->name << ", " << *s6->gpa << endl;
+    s6->study();
+
+    // ---------------- 3. Manual Cleanup for Dynamic Object ----------------
+    // Dynamic objects are not destroyed automatically; 'delete' triggers destructor.
+    delete s6;
+
+    return 0;
+}
+```
+
+---
+
 ## Summary
 
 1. **Constructor** - runs automatically once per object, at creation; same
@@ -526,3 +898,11 @@ sequence of stages:
    **deep-copied** (not pointer-copied) in the copy constructor - otherwise
    two objects end up owning, and eventually double-freeing, the same
    memory.
+
+---
+
+<!-- chapter-nav -->
+
+| Previous | Next |
+| :--- | ---: |
+| [&larr; Chapter 01 - Intro to OOPS](../../Chapter%2001%20-%20Intro%20to%20OOPS/notes/Notes.md) | [Chapter 03 - Encapsulation &rarr;](../../Chapter%2003%20-%20Encapsulation/notes/Notes.md) |

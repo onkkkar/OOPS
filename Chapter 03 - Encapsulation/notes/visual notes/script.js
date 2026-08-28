@@ -169,6 +169,64 @@
     });
   }
 
+
+  // ---- Access Modifier Probe ----
+  // Pick a specifier + a caller; render the verdict the compiler would give,
+  // and light the matching row/cell in the access matrix.
+  var probeWidget = document.getElementById('access-probe-widget');
+  var probeVerdict = document.getElementById('probe-verdict');
+
+  if (probeWidget && probeVerdict){
+    var RULES = {
+      'public|same':      [true,  'A class can always reach its own members, whatever their specifier.', 'cout << this->name;   // OK'],
+      'public|derived':   [true,  'Public members are inherited as public, so the child reaches them directly.', 'cout << name;   // OK inside Car'],
+      'public|outside':   [true,  'Public is the object\'s advertised interface - anyone holding the object can use it.', 'cout << s1.name;   // OK'],
+      'protected|same':   [true,  'The declaring class always has full access to its own members.', 'cout << this->name;   // OK'],
+      'protected|derived':[true,  'This is exactly what protected exists for: open to the family, closed to everyone else.', 'cout << name;   // OK inside Car'],
+      'protected|outside':[false, 'Protected is private as far as the outside world is concerned. Expose it through a public getter instead.', 'cout << s1.name;   // ERROR: \'name\' is protected'],
+      'private|same':     [true,  'Private means private to THIS class - inside it, access is unrestricted.', 'cout << this->gfName;   // OK'],
+      'private|derived':  [false, 'Private members ARE inherited into the child object\'s memory, but the child has no permission to touch them. Only a public or protected method of the parent can hand the value over.', 'cout << gfName;   // ERROR: \'gfName\' is private'],
+      'private|outside':  [false, 'The strongest seal: unreachable outside the declaring class. This is the core of data hiding.', 'cout << s1.gfName;   // ERROR: \'gfName\' is private']
+    };
+    var COL = { same: 1, derived: 2, outside: 3 };
+
+    var curSpec = 'public', curWho = 'same';
+
+    function probeRender(){
+      var r = RULES[curSpec + '|' + curWho];
+      probeVerdict.classList.toggle('allow', r[0]);
+      probeVerdict.classList.toggle('deny', !r[0]);
+      probeVerdict.querySelector('.pv-head').textContent = r[0] ? 'Allowed' : 'Blocked by the compiler';
+      probeVerdict.querySelector('.pv-why').textContent = r[1];
+      probeVerdict.querySelector('.pv-code').textContent = r[2];
+
+      document.querySelectorAll('table.spec-table tr[data-row]').forEach(function(tr){
+        var on = tr.getAttribute('data-row') === curSpec;
+        tr.classList.toggle('row-lit', on);
+        Array.prototype.slice.call(tr.children).forEach(function(td, i){
+          td.classList.toggle('cell-lit', on && i === COL[curWho]);
+        });
+      });
+    }
+
+    probeWidget.querySelectorAll('[data-spec]').forEach(function(b){
+      b.addEventListener('click', function(){
+        curSpec = b.getAttribute('data-spec');
+        probeWidget.querySelectorAll('[data-spec]').forEach(function(x){ x.classList.toggle('sel', x === b); });
+        probeRender();
+      });
+    });
+    probeWidget.querySelectorAll('[data-who]').forEach(function(b){
+      b.addEventListener('click', function(){
+        curWho = b.getAttribute('data-who');
+        probeWidget.querySelectorAll('[data-who]').forEach(function(x){ x.classList.toggle('sel', x === b); });
+        probeRender();
+      });
+    });
+
+    probeRender();
+  }
+
   // ---- Back to top ----
   var topBtn = document.getElementById('back-to-top');
   if (topBtn){

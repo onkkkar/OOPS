@@ -43,7 +43,7 @@ void duplicateVariables()
     study(id2, age2, name2);
     study(id3, age3, name3);
 
-    // Compiles fine, but silently wrong — data mismatch bug
+    // Compiles fine, but silently wrong - data mismatch bug
     study(id1, age2, name3);
 }
 

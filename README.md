@@ -8,10 +8,18 @@ Course notes, runnable code, and interactive visual notes - one folder per chapt
 
 | # | Chapter | Covers | Notes | Visual | Code |
 | :--- | :--- | :--- | :---: | :---: | :---: |
-| 01 | **Intro to OOPS** | Functional programming and where it breaks down, real-world modelling, the container idea, classes and objects, attributes and behaviour | [Read](Chapter%2001%20-%20Intro%20to%20OOPS/notes/Notes.md) | [Launch](Chapter%2001%20-%20Intro%20to%20OOPS/notes/visual%20notes/index.html) | [Browse](Chapter%2001%20-%20Intro%20to%20OOPS/coding) |
-| 02 | **Creating Objects** | Class blueprints, default and parameterised constructors, the `this` keyword, copy constructors, destructors, stack vs heap allocation, deep copy | [Read](Chapter%2002%20-%20Creating%20Objects/notes/Notes.md) | [Launch](Chapter%2002%20-%20Creating%20Objects/notes/visual%20notes/index.html) | [Browse](Chapter%2002%20-%20Creating%20Objects/coding) |
-| 03 | **Encapsulation** | Data plus behaviour plus a security boundary, data hiding, the three access modifiers, perfect encapsulation, getters and setters | [Read](Chapter%2003%20-%20Encapsulation/notes/Notes.md) | [Launch](Chapter%2003%20-%20Encapsulation/notes/visual%20notes/index.html) | [Browse](Chapter%2003%20-%20Encapsulation/coding) |
-| 04 | **Inheritance** | The IS-A relationship, base and derived classes, `public` inheritance mode, constructor and destructor chaining, `protected`, hierarchical extensibility | [Read](Chapter%2004%20-%20Inheritance/notes/Notes.md) | [Launch](Chapter%2004%20-%20Inheritance/notes/visual%20notes/index.html) | [Browse](Chapter%2004%20-%20Inheritance/coding) |
+| 01 | **Intro to OOPS** | Functional programming and where it breaks down, real-world modelling, the container idea, classes and objects, attributes and behaviour | [Read](Chapter%2001%20-%20Intro%20to%20OOPS/notes/Notes.md) | [Launch](https://onkkkar.github.io/OOPS/Chapter%2001%20-%20Intro%20to%20OOPS/notes/visual%20notes/index.html) | [Browse](Chapter%2001%20-%20Intro%20to%20OOPS/coding) |
+| 02 | **Creating Objects** | Class blueprints, default and parameterised constructors, the `this` keyword, copy constructors, destructors, stack vs heap allocation, deep copy | [Read](Chapter%2002%20-%20Creating%20Objects/notes/Notes.md) | [Launch](https://onkkkar.github.io/OOPS/Chapter%2002%20-%20Creating%20Objects/notes/visual%20notes/index.html) | [Browse](Chapter%2002%20-%20Creating%20Objects/coding) |
+| 03 | **Encapsulation** | Data plus behaviour plus a security boundary, data hiding, the three access modifiers, perfect encapsulation, getters and setters | [Read](Chapter%2003%20-%20Encapsulation/notes/Notes.md) | [Launch](https://onkkkar.github.io/OOPS/Chapter%2003%20-%20Encapsulation/notes/visual%20notes/index.html) | [Browse](Chapter%2003%20-%20Encapsulation/coding) |
+| 04 | **Inheritance** | The IS-A relationship, base and derived classes, `public` inheritance mode, constructor and destructor chaining, `protected`, hierarchical extensibility | [Read](Chapter%2004%20-%20Inheritance/notes/Notes.md) | [Launch](https://onkkkar.github.io/OOPS/Chapter%2004%20-%20Inheritance/notes/visual%20notes/index.html) | [Browse](Chapter%2004%20-%20Inheritance/coding) |
+
+
+> [!IMPORTANT]
+> **The Launch links need GitHub Pages switched on** (one time, ~30 seconds). GitHub shows `.html` files as source code rather than rendering them, so the visual notes only come alive once Pages is serving them:
+>
+> **Settings → Pages → Source: _Deploy from a branch_ → Branch: `main` / `(root)` → Save**
+>
+> The links go live at `https://onkkkar.github.io/OOPS/` a minute or so later. Until then, clone the repo and double-click any `index.html` - the visual notes are fully self-contained and need no server.
 
 ---
 

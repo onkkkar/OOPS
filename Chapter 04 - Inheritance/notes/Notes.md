@@ -34,12 +34,20 @@ $$\text{Inheritance} = \text{Reuse of Parent State and Behaviour} + \text{Child-
   - [One Parent, Many Children](#one-parent-many-children)
   - [Visual Architecture: The Vehicle Hierarchy](#visual-architecture-the-vehicle-hierarchy)
   - [Why This Is the Real Payoff](#why-this-is-the-real-payoff)
+- [Types of Inheritance](#types-of-inheritance)
+  - [1. Single Inheritance](#1-single-inheritance)
+  - [2. Multiple Inheritance](#2-multiple-inheritance)
+  - [3. Multilevel Inheritance](#3-multilevel-inheritance)
+  - [4. Hierarchical Inheritance](#4-hierarchical-inheritance)
+  - [5. Hybrid Inheritance](#5-hybrid-inheritance)
+  - [What is `__FUNCTION__` and Why Use It](#what-is-__function__-and-why-use-it)
 - [Key Implementation Rules & Gotchas](#key-implementation-rules--gotchas)
 - [Source Code Walkthrough](#source-code-walkthrough)
   - [1. single-inheritance.cpp](#1-single-inheritancecpp)
   - [2. private-members-in-inheritance.cpp](#2-private-members-in-inheritancecpp)
   - [3. protected-members.cpp](#3-protected-memberscpp)
   - [4. extensibility-hierarchical.cpp](#4-extensibility-hierarchicalcpp)
+  - [5. types-of-inheritance.cpp](#5-types-of-inheritancecpp)
 - [Summary](#summary)
 
 ---
@@ -50,6 +58,7 @@ $$\text{Inheritance} = \text{Reuse of Parent State and Behaviour} + \text{Child-
 > 2. [`2. private-members-in-inheritance.cpp`](../coding/2.%20private-members-in-inheritance.cpp) - A `private` base attribute is inherited but blocked inside the child; the public getter is the legal route.
 > 3. [`3. protected-members.cpp`](../coding/3.%20protected-members.cpp) - `protected` unlocks direct access for the child while still blocking the outside world.
 > 4. [`4. extensibility-hierarchical.cpp`](../coding/4.%20extensibility-hierarchical.cpp) - One `Vehicle` base extended by two independent children, `Car` and `Bike`.
+> 5. [`5. types-of-inheritance.cpp`](../coding/5.%20types-of-inheritance.cpp) - All five shapes (single, multiple, multilevel, hierarchical, hybrid) on an `Employee` hierarchy, plus `__FUNCTION__` for tracing constructor order.
 
 ---
 
@@ -536,6 +545,132 @@ dtor of Vehicle called !!
 ```
 
 Two objects, two very different vehicles, one shared engine implementation. That is **extensibility**: the system grows outward at the leaves while the trunk stays untouched.
+
+---
+
+## Types of Inheritance
+
+Hierarchical inheritance (one base, many children) is just one of **five shapes** an inheritance graph can take. [`5. types-of-inheritance.cpp`](../coding/5.%20types-of-inheritance.cpp) demonstrates all five on an `Employee` hierarchy.
+
+```
+ 1. SINGLE            2. MULTIPLE           3. MULTILEVEL
+
+    A                 A    B    C               A
+    |                  \   |   /                |
+    v                   \  |  /                 v
+    B                     vvv                   B
+                           D                    |
+                                                v
+                                                C
+
+ 4. HIERARCHICAL              5. HYBRID (a mix - here hierarchical + multiple)
+
+        A                          Employee
+      / | \                        /       \
+     v  v  v             MarketingManager  SalesManager
+     B  C  D                        \       /
+                                     v     v
+                          BusinessDevelopmentManager
+```
+
+### 1. Single Inheritance
+
+One base class, one derived class - a straight line. `class Developer : public Employee`. `Developer` reuses `Employee`'s `name`, `employeeId`, and `display()`, and adds `programmingLanguage` and `show()`. This is the pattern the whole chapter has used so far (`Car : public Vehicle`).
+
+### 2. Multiple Inheritance
+
+One derived class inherits from **two or more base classes at once**, absorbing all of them.
+
+```cpp
+class TechLead : public Employee, public ProjectManager, public TeamLead
+{
+public:
+  // Every base is initialised explicitly in the member initializer list,
+  // comma-separated. They are constructed in the order the bases are
+  // DECLARED (Employee, ProjectManager, TeamLead), not the order written here.
+  TechLead(const string &empName, int empId, const string &project, int size)
+      : Employee(empName, empId), ProjectManager(project), TeamLead(size) {}
+
+  void displayInfo() const
+  {
+    display();        // from Employee
+    manageProject();  // from ProjectManager
+    leadTeam();       // from TeamLead
+  }
+};
+```
+
+`TechLead` can call one method from each base and use each base's `protected` data. **Initialising multiple base constructors:** list them all in the member initializer list, separated by commas.
+
+### 3. Multilevel Inheritance
+
+A chain: a derived class becomes the base for a further derived class - `Employee -> HRManager -> HRDirector`.
+
+```cpp
+class HRManager : public Employee            // level 2
+{
+public:
+  HRManager(const string &empName, int empId) : Employee(empName, empId)
+  {
+    cout << __FUNCTION__ << " ctor" << endl;
+  }
+  void handleHRDuties() const { /* ... */ }
+};
+
+class HRDirector : public HRManager          // level 3
+{
+public:
+  HRDirector(const string &empName, int empId) : HRManager(empName, empId)
+  {
+    cout << __FUNCTION__ << " ctor" << endl;
+  }
+  void manageHRDepartment() const { /* ... */ }
+};
+```
+
+Constructing one `HRDirector` runs the whole chain **top-down**: `Employee` ctor -> `HRManager` ctor -> `HRDirector` ctor. An `HRDirector` can call `handleHRDuties()` (from `HRManager`), `manageHRDepartment()` (its own), and `display()` (from `Employee`).
+
+### 4. Hierarchical Inheritance
+
+Two or more derived classes from a **single base class** - like `Car` and `Bike` from `Vehicle` above, or `Manager` and `Analyst` from `Employee`. Each object carries its own base sub-object, so creating one of each runs the base constructor once per object.
+
+### 5. Hybrid Inheritance
+
+Any **combination** of the above in one graph. In the source file, `BusinessDevelopmentManager` mixes hierarchical (both `MarketingManager` and `SalesManager` derive from `Employee`) with multiple (`BusinessDevelopmentManager` derives from both).
+
+```cpp
+class BusinessDevelopmentManager : public MarketingManager, public SalesManager
+{
+public:
+  // Both bases carry their own Employee sub-object, so the employee
+  // details are passed twice - once down each branch.
+  BusinessDevelopmentManager(const string &empName, int empId)
+      : MarketingManager(empName, empId), SalesManager(empName, empId) {}
+
+  void coordinate() const
+  {
+    createMarketingStrategy();   // unambiguous: only MarketingManager has it
+    boostSales();                // unambiguous: only SalesManager has it
+    // display();  // AMBIGUOUS: two Employee sub-objects exist -> won't compile
+  }
+};
+```
+
+This is the classic **"diamond problem"**: `BusinessDevelopmentManager` ends up with **two separate `Employee` sub-objects**, so a plain `display()` call is ambiguous. The fix - **virtual inheritance** - is covered later.
+
+### What is `__FUNCTION__` and Why Use It
+
+`__FUNCTION__` is a **predefined identifier** (a GCC / MSVC spelling of the C++ standard `__func__`). Inside any function it evaluates to that function's name as a C-string; inside a constructor, GCC fills it with the **class name**.
+
+```cpp
+Employee(const string &empName, int empId) : name(empName), employeeId(empId)
+{
+    cout << __FUNCTION__ << " ctor  -> " << name << " (#" << employeeId << ")" << endl;
+    // prints:  Employee ctor  -> Ramu Kaka (#101)
+}
+```
+
+**Why it is useful here:** in a deep or multi-branch hierarchy it is hard to know *which* constructor ran and in what order. Printing `__FUNCTION__` from each constructor gives a free, self-labelling trace of the construction sequence without hand-writing the class name in every `cout`.
 
 ---
 
@@ -1122,6 +1257,54 @@ Note the destruction order at the end: `B` was declared last, so `B` is destroye
 
 ---
 
+### 5. types-of-inheritance.cpp
+
+From [`coding/5. types-of-inheritance.cpp`](../coding/5.%20types-of-inheritance.cpp) - all five inheritance shapes on an `Employee` hierarchy (see the [Types of Inheritance](#types-of-inheritance) section above for the class definitions).
+
+**Program Output:**
+
+```
+--- 1. Single ---
+Employee ctor  -> Ramu Kaka (#101)
+Employee: Ramu Kaka, ID: 101
+Specialization: Developer, Language: C++
+
+--- 2. Multiple ---
+Employee ctor  -> Anna Dev (#202)
+Employee: Anna Dev, ID: 202
+Manages project: Project X
+Leads a team of 5 members
+
+--- 3. Multilevel ---
+Employee ctor  -> Lucy Madam (#303)
+HRManager ctor
+HRDirector ctor
+HR Manager handling human-resources duties
+HR Director managing the whole HR department
+
+--- 4. Hierarchical ---
+Employee ctor  -> Devi Lal (#404)
+Employee ctor  -> Sam Uncle (#505)
+Devi Lal approves leave requests
+Sam Uncle builds the quarterly report
+
+--- 5. Hybrid ---
+Employee ctor  -> Neha Ma'am (#606)
+Employee ctor  -> Neha Ma'am (#606)
+Marketing Manager creating a marketing strategy
+Sales Manager boosting sales
+BDM coordinating business development
+```
+
+**Why:**
+
+- **Multilevel (case 3):** the chain constructs top-down `Employee -> HRManager -> HRDirector`, so all three constructor lines appear in that order for one object.
+- **Hierarchical (case 4):** `Manager` and `Analyst` are independent siblings; each object gets its own `Employee` sub-object, hence two `Employee ctor` lines.
+- **Hybrid (case 5):** `BusinessDevelopmentManager` reaches `Employee` through *both* parents, so it contains **two** `Employee` sub-objects - the constructor line prints twice, and a direct `display()` call would be ambiguous.
+- `__FUNCTION__` resolves to `"Employee"`, `"HRManager"`, `"HRDirector"` from inside each constructor.
+
+---
+
 ## Summary
 
 ```
@@ -1160,6 +1343,15 @@ Note the destruction order at the end: `B` was declared last, so `B` is destroye
    - Shared code is written ONCE and reused, eliminating duplication.
    - New vehicle types cost one new class; the base is never edited,
      so existing working code cannot break.
+
+7. Five Types of Inheritance:
+   - Single, Multiple, Multilevel, Hierarchical, Hybrid.
+   - Multiple bases are initialised comma-separated in the member initializer
+     list, constructed in the order the bases are DECLARED.
+   - Hybrid / multiple can produce the diamond problem (two base sub-objects);
+     virtual inheritance is the fix, covered later.
+   - __FUNCTION__ / __func__ prints the enclosing function's (or ctor's class)
+     name - a cheap trace of construction order in a deep hierarchy.
 =================================================================================
 ```
 

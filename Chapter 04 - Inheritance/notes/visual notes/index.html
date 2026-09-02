@@ -39,9 +39,12 @@
           <li class="sub-item"><a href="#access-matrix">Access Matrix</a></li>
           <li><a href="#extensibility">06. Extensibility</a></li>
           <li class="sub-item"><a href="#hierarchy-diagram">The Vehicle Hierarchy</a></li>
-          <li><a href="#rules-gotchas">07. Rules &amp; Gotchas</a></li>
-          <li><a href="#source-walkthrough">08. Source Code</a></li>
-          <li><a href="#summary">09. Summary</a></li>
+          <li><a href="#types">07. Types of Inheritance</a></li>
+          <li class="sub-item"><a href="#type-multiple">Multiple &amp; Multilevel</a></li>
+          <li class="sub-item"><a href="#function-macro">__FUNCTION__</a></li>
+          <li><a href="#rules-gotchas">08. Rules &amp; Gotchas</a></li>
+          <li><a href="#source-walkthrough">09. Source Code</a></li>
+          <li><a href="#summary">10. Summary</a></li>
         </ul>
       </nav>
     </aside>
@@ -652,10 +655,115 @@ dtor of Vehicle called !!</pre>
         </section>
       </section>
 
-      <!-- Section 7: Rules & Gotchas -->
-      <section id="rules-gotchas" class="sec">
+      <!-- Section 7: Types of Inheritance -->
+      <section id="types" class="sec">
         <div class="sec-head">
           <span class="sec-num">07</span>
+          <h2>Types of Inheritance</h2>
+        </div>
+        <p>
+          Hierarchical inheritance (one base, many children) is just one of <strong>five shapes</strong> an inheritance graph can take. <code>coding/5. types-of-inheritance.cpp</code> demonstrates all five on an <code>Employee</code> hierarchy.
+        </p>
+
+        <div class="diagram-box">
+          <pre class="diagram-pre">
+ 1. SINGLE            2. MULTIPLE           3. MULTILEVEL
+
+    A                 A    B    C               A
+    |                  \   |   /                |
+    v                   \  |  /                 v
+    B                     vvv                   B
+                           D                    |
+                                                v
+                                                C
+
+ 4. HIERARCHICAL              5. HYBRID (a mix - here hierarchical + multiple)
+
+        A                          Employee
+      / | \                        /       \
+     v  v  v             MarketingManager  SalesManager
+     B  C  D                        \       /
+                                     v     v
+                          BusinessDevelopmentManager</pre>
+        </div>
+
+        <h3>1. Single</h3>
+        <p>
+          One base, one derived - a straight line. <code>class Developer : public Employee</code> reuses <code>name</code>, <code>employeeId</code>, <code>display()</code> and adds its own members. This is the pattern the whole chapter used so far.
+        </p>
+
+        <section id="type-multiple" class="sub">
+          <h3>2. Multiple &amp; 3. Multilevel</h3>
+          <p>
+            <strong>Multiple</strong>: one derived class inherits from two or more bases at once. Every base is initialised in the member initializer list, comma-separated, and constructed in the order the bases are <em>declared</em>.
+          </p>
+          <pre class="code"><span class="kw">class</span> <span class="ty">TechLead</span> : <span class="kw">public</span> <span class="ty">Employee</span>, <span class="kw">public</span> <span class="ty">ProjectManager</span>, <span class="kw">public</span> <span class="ty">TeamLead</span>
+{
+<span class="kw">public</span>:
+    <span class="fn">TechLead</span>(<span class="kw">const</span> <span class="ty">string</span> &amp;n, <span class="ty">int</span> id, <span class="kw">const</span> <span class="ty">string</span> &amp;p, <span class="ty">int</span> sz)
+        : <span class="fn">Employee</span>(n, id), <span class="fn">ProjectManager</span>(p), <span class="fn">TeamLead</span>(sz) {}
+
+    <span class="ty">void</span> <span class="fn">displayInfo</span>() <span class="kw">const</span>
+    {
+        <span class="fn">display</span>();        <span class="cm">// from Employee</span>
+        <span class="fn">manageProject</span>();  <span class="cm">// from ProjectManager</span>
+        <span class="fn">leadTeam</span>();       <span class="cm">// from TeamLead</span>
+    }
+};</pre>
+          <p>
+            <strong>Multilevel</strong>: a chain, where a derived class becomes the base for the next - <code>Employee -&gt; HRManager -&gt; HRDirector</code>. Constructing one <code>HRDirector</code> runs the whole chain top-down.
+          </p>
+        </section>
+
+        <h3>4. Hierarchical &amp; 5. Hybrid</h3>
+        <p>
+          <strong>Hierarchical</strong>: two or more derived classes from a single base (<code>Car</code> and <code>Bike</code> from <code>Vehicle</code>; <code>Manager</code> and <code>Analyst</code> from <code>Employee</code>). <strong>Hybrid</strong>: any combination. <code>BusinessDevelopmentManager</code> is both hierarchical (two managers from <code>Employee</code>) and multiple (it derives from both).
+        </p>
+
+        <div class="callout">
+          <div class="callout-title">The Diamond Problem</div>
+          <p>
+            When a class reaches one ancestor through two paths (<code>BusinessDevelopmentManager</code> -&gt; <code>MarketingManager</code>/<code>SalesManager</code> -&gt; <code>Employee</code>), it ends up with <strong>two separate <code>Employee</code> sub-objects</strong>. A plain <code>display()</code> call is then ambiguous and will not compile. The fix - <strong>virtual inheritance</strong> - is covered later.
+          </p>
+        </div>
+
+        <section id="function-macro" class="sub">
+          <h3>What is <code>__FUNCTION__</code> and Why Use It</h3>
+          <p>
+            <code>__FUNCTION__</code> is a predefined identifier (a GCC / MSVC spelling of the standard <code>__func__</code>). Inside any function it evaluates to that function's name as a C-string; inside a constructor, GCC fills it with the <strong>class name</strong>.
+          </p>
+          <pre class="code"><span class="fn">Employee</span>(<span class="kw">const</span> <span class="ty">string</span> &amp;empName, <span class="ty">int</span> empId) : <span class="fn">name</span>(empName), <span class="fn">employeeId</span>(empId)
+{
+    cout &lt;&lt; __FUNCTION__ &lt;&lt; <span class="str">" ctor  -&gt; "</span> &lt;&lt; name &lt;&lt; <span class="str">" (#"</span> &lt;&lt; employeeId &lt;&lt; <span class="str">")"</span> &lt;&lt; endl;
+    <span class="cm">// prints:  Employee ctor  -&gt; Ramu Kaka (#101)</span>
+}</pre>
+          <p>
+            In a deep or multi-branch hierarchy it is hard to know <em>which</em> constructor ran and in what order. Printing <code>__FUNCTION__</code> from each constructor gives a free, self-labelling trace of the construction sequence.
+          </p>
+        </section>
+
+        <h4>Program Output</h4>
+        <div class="diagram-box">
+          <pre class="diagram-pre">
+--- 3. Multilevel ---
+Employee ctor  -&gt; Lucy Madam (#303)
+HRManager ctor                       &lt;-- chain builds top-down
+HRDirector ctor
+
+--- 4. Hierarchical ---
+Employee ctor  -&gt; Devi Lal (#404)
+Employee ctor  -&gt; Sam Uncle (#505)   &lt;-- one Employee sub-object per sibling
+
+--- 5. Hybrid ---
+Employee ctor  -&gt; Neha Ma'am (#606)
+Employee ctor  -&gt; Neha Ma'am (#606)  &lt;-- TWO Employee sub-objects (the diamond)</pre>
+        </div>
+      </section>
+
+      <!-- Section 8: Rules & Gotchas -->
+      <section id="rules-gotchas" class="sec">
+        <div class="sec-head">
+          <span class="sec-num">08</span>
           <h2>Key Implementation Rules &amp; Gotchas</h2>
         </div>
 
@@ -671,10 +779,10 @@ dtor of Vehicle called !!</pre>
         </ol>
       </section>
 
-      <!-- Section 8: Source Code Walkthrough -->
+      <!-- Section 9: Source Code Walkthrough -->
       <section id="source-walkthrough" class="sec">
         <div class="sec-head">
-          <span class="sec-num">08</span>
+          <span class="sec-num">09</span>
           <h2>Source Code Walkthrough</h2>
         </div>
 
@@ -891,16 +999,55 @@ dtor of Vehicle called !!</pre>
         <div class="alert-box alert-warning">
           <strong>Name Hiding Preview:</strong> In <code>3. protected-members.cpp</code>, <code>Car::getName()</code> <em>hides</em> <code>Vehicle::getName()</code> because both share the same name and signature. Calling <code>A.getName()</code> resolves to the child's version - a first glimpse of the name-resolution rules that Polymorphism will formalise.
         </div>
+
+        <h3>5. types-of-inheritance.cpp</h3>
+        <p>From <code>coding/5. types-of-inheritance.cpp</code> - all five inheritance shapes on an <code>Employee</code> hierarchy. The class definitions are in the <a href="#types">Types of Inheritance</a> section above; here is the full program output:</p>
+        <div class="diagram-box">
+          <pre class="diagram-pre">
+--- 1. Single ---
+Employee ctor  -&gt; Ramu Kaka (#101)
+Employee: Ramu Kaka, ID: 101
+Specialization: Developer, Language: C++
+
+--- 2. Multiple ---
+Employee ctor  -&gt; Anna Dev (#202)
+Employee: Anna Dev, ID: 202
+Manages project: Project X
+Leads a team of 5 members
+
+--- 3. Multilevel ---
+Employee ctor  -&gt; Lucy Madam (#303)
+HRManager ctor
+HRDirector ctor
+HR Manager handling human-resources duties
+HR Director managing the whole HR department
+
+--- 4. Hierarchical ---
+Employee ctor  -&gt; Devi Lal (#404)
+Employee ctor  -&gt; Sam Uncle (#505)
+Devi Lal approves leave requests
+Sam Uncle builds the quarterly report
+
+--- 5. Hybrid ---
+Employee ctor  -&gt; Neha Ma'am (#606)
+Employee ctor  -&gt; Neha Ma'am (#606)
+Marketing Manager creating a marketing strategy
+Sales Manager boosting sales
+BDM coordinating business development</pre>
+        </div>
+        <p>
+          The multilevel chain prints three ctor lines top-down for one object; the hierarchical siblings print one <code>Employee ctor</code> each; the hybrid class prints <code>Employee ctor</code> <em>twice</em> - the two sub-objects of the diamond.
+        </p>
       </section>
 
-      <!-- Section 9: Summary -->
+      <!-- Section 10: Summary -->
       <section id="summary" class="sec">
         <div class="sec-head">
-          <span class="sec-num">09</span>
+          <span class="sec-num">10</span>
           <h2>Summary</h2>
         </div>
         <p>
-          Inheritance lets a child class acquire the state and behaviour of a parent and extend it, modelling the IS-A relationship. <code>public</code> mode preserves every member's original access level; construction runs base-first and destruction runs derived-first; <code>protected</code> is the specifier built specifically for the family, opening data to children while still sealing it from the outside world. The real payoff is <strong>extensibility</strong>: one base class, many children, shared code written exactly once, and new types added without ever editing what already works.
+          Inheritance lets a child class acquire the state and behaviour of a parent and extend it, modelling the IS-A relationship. <code>public</code> mode preserves every member's original access level; construction runs base-first and destruction runs derived-first; <code>protected</code> is the specifier built specifically for the family, opening data to children while still sealing it from the outside world. The real payoff is <strong>extensibility</strong>: one base class, many children, shared code written exactly once, and new types added without ever editing what already works. The graph itself comes in five shapes - <strong>single, multiple, multilevel, hierarchical, and hybrid</strong> - with multiple/hybrid introducing the diamond problem that virtual inheritance later solves.
         </p>
       </section>
     
